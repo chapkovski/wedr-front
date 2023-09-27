@@ -33,7 +33,7 @@
                         <div class="grid-container">
                             <!-- Display all emojis -->
                             <template v-for="(emoji, index) in encodedSentenceRef" :key="'emoji-' + index">
-                                <div class="grid-item emoji" :style="{ gridRow: 1, gridColumn: index + 1 }">{{ emoji }}
+                                <div class="grid-item emoji non-selectable" :style="{ gridRow: 1, gridColumn: index + 1 }">{{ emoji }}
                                 </div>
                             </template>
                             <!-- Display all input fields or spaces -->
@@ -61,30 +61,30 @@
 </template>
   
 <script setup>
+import _ from 'lodash';
 import { ref, computed } from 'vue';
-const sentence = "putin, huilo";  // Replace with the sentence you want to encode
+const sentence = "hello world";  // Replace with the sentence you want to encode
 const uniqueLetters = Array.from(new Set(sentence.replace(/\s/g, '')));
 const uniqueLettersLength = uniqueLetters.length;
 
 // Generate an emoji list of length (uniqueLettersLength * 2)
 // You should replace this with the emojis you want to use.
 const emojis = [
-    "😀", "😃", "😄", "😁", "😆", "😅", "😂", "😊",
-    "😇", "🙂", "🙃", "😉", "😌", "😍", "🤩", "😘",
-    "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪",
-    "🤨", "🧐", "🤓", "😎", "🤩", "🥳", "😏", "😒",
-    "😞", "😔", "😟", "😕", "🙁", "☹", "😣", "😖",
-    "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡",
-    "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰",
-    "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶",
-    "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮",
-    "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴",
-    "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠",
-    "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀"
+    "◾️", "🔞", "➕", "⏰", "💄", "🙋", "🔇", "❔", "🐦", "🐁",
+    "⤴️", "📥", "🛐", "🍤", "🆙", "🌩", "↗️", "🐒", "🔺", "✖️",
+    "📩", "🍱", "☀️", "😈", "🔻", "❣", "⛑", "🍰", "😳", "🎣",
+    "😾", "🕧", "🔱", "💤", "🏰", "🆒", "🐃", "🐏", "👛", "🙍",
+    "🚤", "🕵", "🌏", "🔷", "🎛", "🔽", "✅", "😮", "💸", "🎡"
 ].slice(0, uniqueLettersLength * 2);
+// Shuffle the emojis
+const shuffledEmojis = _.shuffle(emojis);
 
 // Create mapping and encoded sentence
-const letterEmojiMap = Object.fromEntries(uniqueLetters.map((letter, index) => [letter, emojis[index]]));
+const letterEmojiMap = Object.fromEntries(uniqueLetters.map((letter, index) => [letter, shuffledEmojis[index]]));
+
+
+// Create mapping and encoded sentence
+
 const encodedSentence = sentence.split('').map(letter => {
     return (letter === ' ' || letter === ',') ? letter : letterEmojiMap[letter];
 });
@@ -135,6 +135,7 @@ const resetInputs = () => {
 };
 
 
+
 const isAllFilled = computed(() => {
     return !decodedSentence.value.includes('');
 });
@@ -149,6 +150,8 @@ const validateWord = () => {
         validationMessage.value = "Wrong, try again.";
     }
 };
+
+
 </script>
 
 <style scoped>
@@ -181,6 +184,13 @@ const validateWord = () => {
     border: none;
     border-bottom: 2px solid black;
     text-align: center;
+}
+
+.non-selectable {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 </style>
   
