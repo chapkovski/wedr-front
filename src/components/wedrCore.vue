@@ -1,14 +1,36 @@
 <template>
-    <div>
-        <p>Sentence: {{ sentence }}</p>
-        <div v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-            <span v-html="charObj.letter"></span>
-            <input v-if="charObj.input" v-model="charObj.userInput" @input="handleInput(charObj.inputIndex)"
-                @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs"
-                type="text" maxlength="1"
-                 />
-        </div>
-    </div>
+    <v-card>
+        <v-card-title>
+            Encoded Sentence
+        </v-card-title>
+        <v-card-text>
+            <!-- Grid container for emojis and input fields -->
+            <div class="grid-container">
+                <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                    <div class="grid-item emoji non-selectable" :style="{ gridRow: 1, gridColumn: index + 1 }"
+                        v-html="charObj.letter">
+                    </div>
+                </template>
+
+
+                <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                    <div class="grid-item" :style="{ gridRow: 2, gridColumn: index + 1 }">
+                        <input class="input-field" v-if="charObj.input" 
+                        autocomplete="off"
+                        :name="`input-${charObj.inputIndex}`"
+                        v-model="charObj.userInput"
+                            @input="handleInput(charObj.inputIndex)" @keydown="handleKeydown(charObj.inputIndex, $event)"
+                            ref="inputRefs" type="text" maxlength="1" />
+
+
+                    </div>
+                </template>
+
+
+
+            </div>
+        </v-card-text>
+    </v-card>
 </template>
   
 <script setup>
@@ -57,4 +79,42 @@ const handleKeydown = (inputIndex, event) => {
 
 onMounted(cleanSentence);
 </script>
+  
+<style scoped>
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    grid-template-rows: repeat(2, 50px);
+    /* Create two rows of 50px height each */
+    gap: 0px 4px;
+}
+
+.grid-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    width: 50px;
+}
+
+.input-field {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    font-size: 1.5em;
+    border: none;
+    border-bottom: 2px solid black;
+}
+
+.emoji {
+    font-size: 3em;
+}
+
+.non-selectable {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+</style>
   
