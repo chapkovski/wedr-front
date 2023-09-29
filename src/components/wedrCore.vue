@@ -20,7 +20,8 @@
                         :name="`input-${charObj.inputIndex}`"
                         v-model="charObj.userInput"
                             @input="handleInput(charObj.inputIndex)" @keydown="handleKeydown(charObj.inputIndex, $event)"
-                            ref="inputRefs" type="text" maxlength="1" />
+                            ref="inputRefs" type="text" maxlength="1"
+                            @focus="handleFocus($event)" />
 
 
                     </div>
@@ -73,6 +74,9 @@ const handleKeydown = (inputIndex, event) => {
             }
         });
     }
+};
+const handleFocus = (event) => {
+  event.target.select();
 };
 
 
