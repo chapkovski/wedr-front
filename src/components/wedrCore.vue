@@ -36,7 +36,27 @@
   
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
+import _ from 'lodash';
 
+const alphabets = 'abcdefghijklmnopqrstuvwxyz'.split('');
+const emojis = [
+  '📃', '🐨', '🔓', '🎚', '🏑', '💮', '💱', '🎐', '🍛', '🚱',
+  '💈', '🎲', '⛵️', '4️⃣', '🔀', '⚽️', '⚜', '😄', '😢', '🆘',
+  '🏔', '🚶', '💁', '🉑', '📐', '🔨', '🐪', '🔡', '🐂', '🚄',
+  '😈', '🔤', '📄', '⏸', '💟', '♐️', '🍖', '📮', '💍', '*⃣',
+  '⏫', '⛸', '😗', '🍦', '✂️', '🏓', '🚼', '👠', '⛅️', '⏺',
+  '🕙', '🌴', '🔼', '🐤', '🔠', '🛐', '🏤', '👀', '☑️', '🍬',
+  '🎫', '☮', '💻', '🐉', '🚈', '✔️', '📧', '🈶', '🙃', '😴',
+  '🍥', '🏐', '🍎', '👟', '🕉', '🌉', '〰️', '🖱', '🚹', '🐺',
+  '💆', '🗺', '🐠', '🔯', '📡', '🐩', '🚢', '🚉', '🐍', '🍨',
+  '🕡', '🚂', '💣', '🔅', '💊', '🍉', '😔', '🎎', '👱', '🛁'
+];
+
+// Shuffle the emojis and take as many as there are alphabets
+const shuffledEmojis = _.shuffle(emojis).slice(0, alphabets.length);
+
+// Zip the alphabets and shuffled emojis to create an emoji dictionary
+const emojiDict = _.zipObject(alphabets, shuffledEmojis);
 const sentence = ref('hello, world!');
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
@@ -45,8 +65,11 @@ const cleanSentence = () => {
     let inputIndex = 0;
     cleanedSentenceArray.value = Array.from(sentence.value).map((letter) => {
         let isInput = /[a-zA-Z]/.test(letter);
+        let symbol = isInput ? (emojiDict[letter.toLowerCase()] || letter) : letter;
+        symbol = symbol === ' ' ? '&nbsp;' : symbol;
+
         return {
-            letter: letter === ' ' ? '&nbsp;' : letter,
+            letter: symbol,
             input: isInput,
             userInput: '',
             inputIndex: isInput ? inputIndex++ : null,
