@@ -1,48 +1,58 @@
 <template>
-     
-        
-        <div  :style="gridStyle"  class="dict-grid-container">
-            <!-- First row for emojis -->
-            <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter" class="dict-grid-item">
-                {{ emoji }}
-            </div>
-            <!-- Second row for letters -->
-            <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter + '-letter'" class="dict-grid-item">
-                {{ letter }}
-            </div>
-        </div>
-    
-
-    <v-card>
-        <v-card-title>
-            Encoded Sentence
-        </v-card-title>
-        <v-card-text>
-            <!-- Grid container for emojis and input fields -->
-            <div class="grid-container">
-                <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-                    <div class="grid-item emoji non-selectable" :style="{ gridRow: 1, gridColumn: index + 1 }"
-                        v-html="charObj.letter">
+    <div>
+        <v-card outlined  elevation="3" class="m-3 p-3 my-3">
+            <v-card-title>
+                Dictionary
+            </v-card-title>
+            <v-card-text class="m-3 p-3 dictionary-text-card" >
+               <div>
+                <div class="flex-container">
+                    <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter" class="flex-item">
+                        <div class="emoji">
+                            {{ emoji }}
+                        </div>
+                        <div class="letter">
+                            {{ letter }}
+                        </div>
                     </div>
-                </template>
+                </div>
+               </div>
+            </v-card-text>
+        </v-card>
 
 
-                <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-                    <div class="grid-item" :style="{ gridRow: 2, gridColumn: index + 1 }">
-                        <input class="input-field" v-if="charObj.input" autocomplete="off"
-                            :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
-                            @input="handleInput(charObj.inputIndex)" @keydown="handleKeydown(charObj.inputIndex, $event)"
-                            ref="inputRefs" type="text" maxlength="1" @focus="handleFocus($event)" />
+        <v-card outlined elevation="3" class="my-3">
+            <v-card-title>
+                Encoded Sentence
+            </v-card-title>
+            <v-card-text>
+                <!-- Grid container for emojis and input fields -->
+                <div class="grid-container">
+                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                        <div class="grid-item emoji non-selectable" :style="{ gridRow: 1, gridColumn: index + 1 }"
+                            v-html="charObj.letter">
+                        </div>
+                    </template>
 
 
-                    </div>
-                </template>
+                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                        <div class="grid-item" :style="{ gridRow: 2, gridColumn: index + 1 }">
+                            <input class="input-field" v-if="charObj.input" autocomplete="off"
+                                :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
+                                @input="handleInput(charObj.inputIndex)"
+                                @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
+                                maxlength="1" @focus="handleFocus($event)" />
+
+
+                        </div>
+                    </template>
 
 
 
-            </div>
-        </v-card-text>
-    </v-card>
+                </div>
+            </v-card-text>
+        </v-card>
+    </div>
 </template>
   
 <script setup>
@@ -70,7 +80,7 @@ const shuffledEmojis = _.shuffle(emojis).slice(0, alphabets.length);
 const emojiDict = _.zipObject(alphabets, shuffledEmojis);
 // Find the remaining alphabets that are not in uniqueLettersInSentence
 
-const sentence = ref('hello, world!');
+const sentence = ref('early bird gets worm');
 const uniqueLettersInSentence = Array.from(new Set(sentence.value.match(/[a-zA-Z]/g) || []));
 const remainingAlphabets = _.difference(alphabets, uniqueLettersInSentence);
 
@@ -118,11 +128,11 @@ const handleInput = (inputIndex) => {
 };
 
 const gridStyle = computed(() => {
-  const columnCount = Object.keys(displayedEmojiDict).length;
-  return {
-    'grid-template-columns': `repeat(${columnCount}, minmax(50px, 1fr))`,
-    'grid-template-rows': 'repeat(2, auto)',
-  };
+    const columnCount = Object.keys(displayedEmojiDict).length;
+    return {
+        'grid-template-columns': `repeat(${columnCount}, minmax(50px, 1fr))`,
+        'grid-template-rows': 'repeat(2, auto)',
+    };
 });
 
 const handleKeydown = (inputIndex, event) => {
@@ -145,16 +155,32 @@ onMounted(cleanSentence);
 </script>
   
 <style scoped>
-.dict-grid-container {
-  display: grid;
-  grid-template-columns: repeat(14, minmax(50px, 1fr));
-  grid-template-rows: repeat(2, auto);
-  gap: 16px;
+.dictionary-text-card{
+    line-height: 3em!important;
 }
-.dict-grid-item {
-  text-align: center;
-  font-size: 1.5em;
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    line-height: normal;
 }
+
+.flex-item {
+    border:0.5px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin:0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.emoji,
+.letter {
+    font-size: 3em;
+}
+
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
@@ -180,9 +206,6 @@ onMounted(cleanSentence);
     border-bottom: 2px solid black;
 }
 
-.emoji {
-    font-size: 3em;
-}
 
 .non-selectable {
     user-select: none;
