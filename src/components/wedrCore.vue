@@ -1,13 +1,17 @@
 <template>
-    <div class="dict-grid-container">
-        <div class="dict-grid-item" v-for="key in displayedLetters" :key="key + '-letter'">
-            {{ key }}
-        </div>
+     
         
-        <div class="dict-grid-item" v-for="jey in displayedEmojis" :key="jey + '-emoji'">
-            {{ jey }}
+        <div  :style="gridStyle"  class="dict-grid-container">
+            <!-- First row for emojis -->
+            <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter" class="dict-grid-item">
+                {{ emoji }}
+            </div>
+            <!-- Second row for letters -->
+            <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter + '-letter'" class="dict-grid-item">
+                {{ letter }}
+            </div>
         </div>
-    </div>
+    
 
     <v-card>
         <v-card-title>
@@ -42,7 +46,7 @@
 </template>
   
 <script setup>
-import { ref, onMounted, nextTick } from 'vue';
+import { ref, onMounted, nextTick, computed } from 'vue';
 import _ from 'lodash';
 
 const alphabets = 'abcdefghijklmnopqrstuvwxyz'.split('');
@@ -73,16 +77,14 @@ const remainingAlphabets = _.difference(alphabets, uniqueLettersInSentence);
 // Randomly pick X letters from remainingAlphabets
 const extraLetters = _.sampleSize(remainingAlphabets, uniqueLettersInSentence.length);
 
-console.debug('uniqueLettersInSentence', uniqueLettersInSentence);
-console.debug('remainingAlphabets', remainingAlphabets);
-console.debug('extraLetters', extraLetters);
 // Combine and sort
 const displayedLetters = [...new Set([...uniqueLettersInSentence, ...extraLetters])].sort();
-console.debug('displayedLetters', displayedLetters);
-const displayedEmojiDict = Object.fromEntries(
-  displayedLetters.map(letter => [letter, emojiDict[letter]])
-);
 
+const displayedEmojiDict = Object.fromEntries(
+    displayedLetters.map(letter => [letter, emojiDict[letter]])
+);
+console.debug('displayedLetters', displayedLetters);
+console.debug('displayedEmojiDict', displayedEmojiDict);
 // Convert it to an array if needed
 const displayedEmojis = displayedLetters.map(letter => emojiDict[letter]);
 const cleanedSentenceArray = ref([]);
@@ -115,6 +117,14 @@ const handleInput = (inputIndex) => {
     }
 };
 
+const gridStyle = computed(() => {
+  const columnCount = Object.keys(displayedEmojiDict).length;
+  return {
+    'grid-template-columns': `repeat(${columnCount}, minmax(50px, 1fr))`,
+    'grid-template-rows': 'repeat(2, auto)',
+  };
+});
+
 const handleKeydown = (inputIndex, event) => {
     const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
     if (currentInput && event.key === 'Backspace' && currentInput.userInput.length === 0) {
@@ -135,21 +145,16 @@ onMounted(cleanSentence);
 </script>
   
 <style scoped>
-
 .dict-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
-    grid-template-rows: repeat(2, 30px);
-    /* Create two rows of 50px height each */
-    gap: 0px 4px;
+  display: grid;
+  grid-template-columns: repeat(14, minmax(50px, 1fr));
+  grid-template-rows: repeat(2, auto);
+  gap: 16px;
 }
-
 .dict-grid-item {
   text-align: center;
-  padding: 5px;
-  border: 1px solid #ccc;
+  font-size: 1.5em;
 }
-
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
