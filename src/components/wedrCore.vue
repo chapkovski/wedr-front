@@ -12,7 +12,7 @@
                                 {{ emoji }}
                             </div>
                             <div class="letter">
-                                {{ letter }}
+                                {{ letter.toUpperCase() }}
                             </div>
                         </div>
                     </div>
@@ -27,43 +27,39 @@
             </v-card-title>
             <v-card-text>
                 <!-- Grid container for emojis and input fields -->
-                <div class="grid-container">
-                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-                        <div class="grid-item emoji non-selectable" :style="{ gridRow: 1, gridColumn: index + 1 }"
-                            v-html="charObj.letter">
-                        </div>
-                    </template>
-
-
-                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-                        <div class="grid-item" :style="{ gridRow: 2, gridColumn: index + 1 }">
-                            <input class="input-field" v-if="charObj.input" autocomplete="off"
-                                :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
-                                @input="handleInput(charObj.inputIndex)"
-                                @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
-                                maxlength="1" @focus="handleFocus($event)" />
-
-
-                        </div>
-                    </template>
+                <div class="input-flex-container">
+    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+      <div class="input-flex-item">
+        <div class="emoji" v-html="displayedEmojiDict[charObj.letter.toLowerCase()] || charObj.letter">
+</div>
+        <div>
+          <input class="input-field" v-if="charObj.input" autocomplete="off"
+            :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
+            @input="handleInput(charObj.inputIndex)"
+            @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
+            maxlength="1" @focus="handleFocus($event)" />
+        </div>
+      </div>
+    </template>
+  </div>
+        
 
 
 
-                </div>
-            </v-card-text>
-            <v-card-actions>
-                <v-btn-group>
-                    <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
-                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
-                        @click="handleSubmit">Submit</v-btn>
-                </v-btn-group>
-            </v-card-actions>
-        </v-card>
+   
+    </v-card-text>
+    <v-card-actions>
+        <v-btn-group>
+            <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
+            <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
+                @click="handleSubmit">Submit</v-btn>
+        </v-btn-group>
+    </v-card-actions>
+    </v-card>
 
 
 
-    </div>
-</template>
+</div></template>
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
@@ -90,8 +86,10 @@ const shuffledEmojis = _.shuffle(emojis).slice(0, alphabets.length);
 const emojiDict = _.zipObject(alphabets, shuffledEmojis);
 // Find the remaining alphabets that are not in uniqueLettersInSentence
 
-const sentence = ref('hello world');
-const uniqueLettersInSentence = Array.from(new Set(sentence.value.match(/[a-zA-Z]/g) || []));
+const sentence = ref('Ania, I love you!');
+const lowerCaseSentence = sentence.value.toLowerCase();
+const uniqueLettersInSentence = Array.from(new Set(lowerCaseSentence.match(/[a-zA-Z]/g) || []));
+
 const remainingAlphabets = _.difference(alphabets, uniqueLettersInSentence);
 
 // Randomly pick X letters from remainingAlphabets
@@ -183,6 +181,25 @@ onMounted(cleanSentence);
 </script>
   
 <style scoped>
+.input-flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    min-height: 50px;
+}
+
+.input-flex-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 80px;  /* Adjust this value to increase the height */
+  max-width: 40px;  /* You can adjust this value */
+  width: 100%;  /* Take up full width up to max-width */
+}
+.input-flex-item input{
+    min-height: 60px;
+}
 .dictionary-text-card {
     line-height: 3em !important;
 }
@@ -229,6 +246,7 @@ onMounted(cleanSentence);
 .input-field {
     width: 100%;
     height: 100%;
+    min-height: 50px!important;
     text-align: center;
     font-size: 1.5em;
     border: none;
