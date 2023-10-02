@@ -1,5 +1,5 @@
 <script setup>
- 
+
 import ChatContainer from './components/ChatContainer.vue';
 import wedrCore from './components/wedrCore.vue';
 import { computed } from 'vue';
@@ -19,13 +19,13 @@ const columnStyle = computed(() => {
 <template>
   <v-app app>
     <v-main app full-width class="non-scrollable">
-      <v-row :class="{'flex-column': smAndDown}" style="height: 100vh;">
-        
+      <v-row :class="{ 'flex-column': smAndDown }" style="height: 100vh;">
+
         <v-col :cols="wedrCoreCols" :style="columnStyle">
           <wedrCore></wedrCore>
         </v-col>
-        
-        <v-col :cols="chatContainerCols" :style="columnStyle">
+
+        <v-col :cols="chatContainerCols" :style="columnStyle" class="chat-container-col">
           <ChatContainer></ChatContainer>
         </v-col>
 
@@ -37,6 +37,11 @@ const columnStyle = computed(() => {
 
 
 <style scoped>
+.chat-container-col {
+  display: flex;
+  flex-direction: column;
+}
+
 .scrollable {
   height: 100vh;
   /* Full viewport height */

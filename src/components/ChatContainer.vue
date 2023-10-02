@@ -1,99 +1,145 @@
 
 <template>
     <v-card class="chat-box">
-        <v-card-text>
+        <v-card-text class="chat-messages">
+            
             <ChatMessage v-for="(msg, index) in augmentedChatProtocol" :key="index" :author="msg.author"
                 :message="msg.message" :showAvatar="msg.showAvatar" :firstInSeries="msg.firstInSeries"
-                :lastInSeries="msg.lastInSeries" />
+                :lastInSeries="msg.lastInSeries" :ref="allMessagesRef" />
+                <div ref="lastMSG" style="height: 50px;">&nbsp;<br>&nbsp<br></div>
         </v-card-text>
+
+        <div class="chat-input">
+            <v-text-field multiple label="Type your message" v-model="newMessage" @keyup.enter="addMessage" outlined
+                single-line clearable>
+                <template v-slot:append>
+                    <v-btn @click="addMessage" icon>
+                        <v-icon>mdi-send</v-icon>
+                    </v-btn>
+                </template>
+            </v-text-field>
+        </div>
+
     </v-card>
 </template>
-  
-<script>
+
+<script setup>
+import _ from 'lodash'
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+
+
 import ChatMessage from './ChatMessage.vue';
-import _ from 'lodash';
-export default {
-    components: {
-        ChatMessage,
-    },
-    data() {
-        // here i want to generate temporarily a lot of messages of format
-        // { author: 1, timestamp: 111, message: 'xxx' },
-        // using lodash
-        const authorMessages = [
-            'The unexamined life is not worth living.',
-            'I think, therefore I am.',
-            'Man is condemned to be free.',
-            'To be is to be perceived.',
-            'Reality is merely an illusion.',
-            'The only thing we have to fear is fear itself.',
-            'Happiness is the highest good.',
-            'The root of suffering is attachment.',
-            'The only constant is change.',
-            'Knowledge is power.',
-            'Appearances are deceptive.',
-            'Necessity is the mother of invention.',
-            'The sum of all natural numbers is -1/12.',
-            'The Tao that can be told is not the eternal Tao.',
-            'One cannot step into the same river twice.',
-            'All we are is dust in the wind.',
-            'Ignorance is the root of all evil.',
-            'Power corrupts; absolute power corrupts absolutely.',
-            'Beauty is in the eye of the beholder.',
-            'Life is suffering.'
-        ];
-
-        let chatProtocol = [];
-        let currentAuthor = 1; // Start with author 1
-        let remainingMessages = [...authorMessages]; // Clone the array to keep track of remaining messages
-
-        for (let i = 0; i < 100;) {
-            const numMessages = _.random(1, 2); // Randomly pick either 1 or 2 messages for this author
-
-            if (remainingMessages.length < numMessages) {
-                remainingMessages = [...authorMessages]; // Reset the pool if not enough messages are left
-            }
-
-            const messages = _.sampleSize(remainingMessages, numMessages);
-            remainingMessages = _.difference(remainingMessages, messages); // Remove selected messages from the pool
-
-            for (const message of messages) {
-                chatProtocol.push({
-                    author: currentAuthor,
-                    timestamp: _.random(100, 200),
-                    message: message
-                });
-                i++; // Increment the loop counter
-            }
-
-            currentAuthor = 3 - currentAuthor;// Switch to the other author (1 becomes 2, 2 becomes 1)
-        }
-
-
-        return {
-            chatProtocol: chatProtocol,
-        };
-    },
-    computed: {
-        augmentedChatProtocol() {
-            let lastInSeries = false;
-            return this.chatProtocol.map((msg, index, arr) => {
-                const nextMsg = arr[index + 1];
-                if (!nextMsg || nextMsg.author !== msg.author) {
-                    lastInSeries = true;
-                } else {
-                    lastInSeries = false;
-                }
-                const firstInSeries = !arr[index - 1] || arr[index - 1].author !== msg.author;
-                const showAvatar = firstInSeries;
-                return { ...msg, showAvatar, firstInSeries, lastInSeries };
-            });
+// Data
+const authorMessages = ref(
+    [
+        {
+            "author": 1,
+            "timestamp": 101,
+            "message": "Hey, let's decode the next word. I have the emojis for D, M, C, and Y."
         },
-    }
+        {
+            "author": 2,
+            "timestamp": 102,
+            "message": "Alright, I have the rest. E is represented by a ballot box."
+        },
+        {
+            "author": 1,
+            "timestamp": 103,
+            "message": "Great, D is like a government building."
+        },
+        {
+            "author": 2,
+            "timestamp": 104,
+            "message": "For O, it's a woman doing some kind of gesture."
+        },
+        {
+            "author": 1,
+            "timestamp": 105,
+            "message": "M is represented by a hockey stick ."
+        },
+        {
+            "author": 2,
+            "timestamp": 106,
+            "message": "For C, it's a poodle."
+        },
+        {
+            "author": 1,
+            "timestamp": 107,
+            "message": "Ah, okay. R is an ice cream cone ."
+        },
+        {
+            "author": 2,
+            "timestamp": 108,
+            "message": "A is an SOS sign."
+        },
+        {
+            "author": 1,
+            "timestamp": 109,
+            "message": "And Y is a wolf ."
+        },
+        {
+            "author": 2,
+            "timestamp": 110,
+            "message": "Great, so we have: D-E-M-O-C-R-A-C-Y, right?"
+        },
+        {
+            "author": 1,
+            "timestamp": 111,
+            "message": "Yes, that's correct. The word is DEMOCRACY."
+        }
+    ]
+);
+const allMessagesRef = ref([]);
+const lastMSG = ref();
+const scrollToLastMessage = () => {
+    lastMSG.value.scrollIntoView({ behavior: "smooth" });
+};
+
+// This should work now
+watch(() => authorMessages.value, () => {
+    scrollToLastMessage();
+});
+// Scroll to the bottom when the component mounts
+
+
+
+
+const newMessage = ref(""); // For the input field
+
+// Function to add a new message
+const addMessage = () => {
+    if (newMessage.value.trim() === "") return;
+    authorMessages.value.push({
+        // using lodash to  random choice betweeen 1 and 2
+        author: _.random(1, 2),
+        timestamp: Date.now(),
+        message: newMessage.value
+    });
+    newMessage.value = "";
+    scrollToLastMessage();
 
 };
+
+
+// Computed
+const augmentedChatProtocol = computed(() => {
+    let lastInSeries = false;
+    return authorMessages.value.map((msg, index, arr) => {
+        const nextMsg = arr[index + 1];
+        if (!nextMsg || nextMsg.author !== msg.author) {
+            lastInSeries = true;
+        } else {
+            lastInSeries = false;
+        }
+        const firstInSeries = !arr[index - 1] || arr[index - 1].author !== msg.author;
+        const showAvatar = firstInSeries;
+        return { ...msg, showAvatar, firstInSeries, lastInSeries };
+    });
+});
 </script>
-  
+
+ 
+
 <style >
 /* Formatting the fieldset within the div class sd-rating */
 .sd-rating.sd-scrollable-container.sd-rating.sd-rating--wrappable fieldset {
@@ -121,11 +167,28 @@ span.sd-rating__max-text {
 }
 
 .chat-box {
+    height: 100%;
     margin-left: 10px;
     margin-top: 10px;
     padding: 10px;
-    /* width: 45%; or whatever percentage you prefer */
-    /* additional styles if needed */
+    display: flex !important;
+    ;
+    flex-direction: column;
+    flex: 1;
+}
+
+
+
+.chat-messages {
+    display: flex;
+    flex-direction: column;
+    ;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.chat-input {
+    padding: 10px;
 }
 </style>
   

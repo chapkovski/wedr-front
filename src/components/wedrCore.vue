@@ -86,7 +86,7 @@ const shuffledEmojis = _.shuffle(emojis).slice(0, alphabets.length);
 const emojiDict = _.zipObject(alphabets, shuffledEmojis);
 // Find the remaining alphabets that are not in uniqueLettersInSentence
 
-const sentence = ref('Ania, I love you!');
+const sentence = ref('democracy');
 const lowerCaseSentence = sentence.value.toLowerCase();
 const uniqueLettersInSentence = Array.from(new Set(lowerCaseSentence.match(/[a-zA-Z]/g) || []));
 

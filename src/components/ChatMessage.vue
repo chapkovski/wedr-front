@@ -1,5 +1,7 @@
 <template>
-       <div :class="['chat-message', authorClass, { 'first-in-series': firstInSeries, 'last-in-series': lastInSeries }]">
+       <div
+       :ref="rootElement"
+        :class="['chat-message', authorClass, { 'first-in-series': firstInSeries, 'last-in-series': lastInSeries }]">
       <div v-if="showAvatar && author === 1" class="avatar" :style="{ backgroundColor: avatarColor }">
         P{{ author }}
       </div>

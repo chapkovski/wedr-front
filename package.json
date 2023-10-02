@@ -1,5 +1,4 @@
 {
-  
   "name": "wedr-front",
   "version": "0.0.0",
   "private": true,
@@ -9,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mdi/font": "^7.2.96",
     "lodash": "^4.17.21",
     "showdown": "^2.1.0",
     "survey-core": "^1.9.109",
