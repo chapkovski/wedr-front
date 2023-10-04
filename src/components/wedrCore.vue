@@ -28,38 +28,39 @@
             <v-card-text>
                 <!-- Grid container for emojis and input fields -->
                 <div class="input-flex-container">
-    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-      <div class="input-flex-item">
-        <div class="emoji" v-html="displayedEmojiDict[charObj.letter.toLowerCase()] || charObj.letter">
-</div>
-        <div>
-          <input class="input-field" v-if="charObj.input" autocomplete="off"
-            :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
-            @input="handleInput(charObj.inputIndex)"
-            @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
-            maxlength="1" @focus="handleFocus($event)" />
-        </div>
-      </div>
-    </template>
-  </div>
-        
+                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                        <div class="input-flex-item">
+                            <div class="emoji" v-html="displayedEmojiDict[charObj.letter.toLowerCase()] || charObj.letter">
+                            </div>
+                            <div>
+                                <input class="input-field" v-if="charObj.input" autocomplete="off"
+                                    :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
+                                    @input="handleInput(charObj.inputIndex)"
+                                    @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
+                                    maxlength="1" @focus="handleFocus($event)" />
+                            </div>
+                        </div>
+                    </template>
+                </div>
 
 
 
-   
-    </v-card-text>
-    <v-card-actions>
-        <v-btn-group>
-            <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
-            <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
-                @click="handleSubmit">Submit</v-btn>
-        </v-btn-group>
-    </v-card-actions>
-    </v-card>
+
+
+            </v-card-text>
+            <v-card-actions>
+                <v-btn-group>
+                    <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
+                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
+                        @click="handleSubmit">Submit</v-btn>
+                </v-btn-group>
+            </v-card-actions>
+        </v-card>
 
 
 
-</div></template>
+    </div>
+</template>
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
@@ -101,15 +102,18 @@ const displayedLetters = [...new Set([...uniqueLettersInSentence, ...extraLetter
 const displayedEmojiDict = Object.fromEntries(
     displayedLetters.map(letter => [letter, emojiDict[letter]])
 );
-console.debug('displayedLetters', displayedLetters);
-console.debug('displayedEmojiDict', displayedEmojiDict);
+
 // Convert it to an array if needed
-const displayedEmojis = displayedLetters.map(letter => emojiDict[letter]);
+
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
 
 const cleanSentence = () => {
+    console.debug(js_vars)
+    nextTick(() => {
+        inputRefs.value[0].focus();
+    });
     let inputIndex = 0;
     cleanedSentenceArray.value = Array.from(sentence.value).map((letter) => {
         let isInput = /[a-zA-Z]/.test(letter);
@@ -181,6 +185,13 @@ onMounted(cleanSentence);
 </script>
   
 <style scoped>
+@media (max-width: 480px) {
+    html {
+        font-size: 10px;
+        /* Adjust this value as needed */
+    }
+}
+
 .input-flex-container {
     display: flex;
     flex-wrap: wrap;
@@ -189,19 +200,24 @@ onMounted(cleanSentence);
 }
 
 .input-flex-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 80px;  /* Adjust this value to increase the height */
-  max-width: 40px;  /* You can adjust this value */
-  width: 100%;  /* Take up full width up to max-width */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 80px;
+    /* Adjust this value to increase the height */
+    max-width: 40px;
+    /* You can adjust this value */
+    width: 100%;
+    /* Take up full width up to max-width */
 }
-.input-flex-item input{
+
+.input-flex-item input {
     min-height: 60px;
 }
+
 .dictionary-text-card {
-    line-height: 3em !important;
+    line-height: 2rem !important;
 }
 
 .flex-container {
@@ -224,7 +240,7 @@ onMounted(cleanSentence);
 
 .emoji,
 .letter {
-    font-size: 3em;
+    font-size: 1.5rem;
 }
 
 .grid-container {
@@ -246,9 +262,9 @@ onMounted(cleanSentence);
 .input-field {
     width: 100%;
     height: 100%;
-    min-height: 50px!important;
+    min-height: 50px !important;
     text-align: center;
-    font-size: 1.5em;
+    font-size: 1.5rem;
     border: none;
     border-bottom: 2px solid black;
 }
@@ -259,6 +275,5 @@ onMounted(cleanSentence);
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-}
-</style>
+}</style>
   

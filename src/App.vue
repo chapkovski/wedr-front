@@ -36,7 +36,28 @@ const columnStyle = computed(() => {
 
 
 
-<style scoped>
+<style>
+
+/* Mobile screens */
+@media (max-width: 480px) {
+  html {
+    font-size: 12px; /* or whatever size you want */
+  }
+}
+
+/* Tablet screens */
+@media (min-width: 481px) and (max-width: 1024px) {
+  html {
+    font-size: 14px; /* or whatever size you want */
+  }
+}
+
+/* Desktop screens */
+@media (min-width: 1025px) {
+  html {
+    font-size: 16px; /* or whatever size you want */
+  }
+}
 .chat-container-col {
   display: flex;
   flex-direction: column;
