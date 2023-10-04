@@ -53,7 +53,9 @@
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
                     <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
                         @click="handleSubmit">Submit</v-btn>
+                        
                 </v-btn-group>
+                <v-alert color="red" class="mx-1" v-if="errorMessage">{{ errorMessage }}</v-alert>
             </v-card-actions>
         </v-card>
 
@@ -66,65 +68,28 @@
 import { ref, onMounted, nextTick, computed } from 'vue';
 import _ from 'lodash';
 
-const alphabets = 'abcdefghijklmnopqrstuvwxyz'.split('');
-const emojis = [
-    '📃', '🐨', '🔓', '🎚', '🏑', '💮', '💱', '🎐', '🍛', '🚱',
-    '💈', '🎲', '⛵️', '4️⃣', '🔀', '⚽️', '⚜', '😄', '😢', '🆘',
-    '🏔', '🚶', '💁', '🉑', '📐', '🔨', '🐪', '🔡', '🐂', '🚄',
-    '😈', '🔤', '📄', '⏸', '💟', '♐️', '🍖', '📮', '💍', '*⃣',
-    '⏫', '⛸', '😗', '🍦', '✂️', '🏓', '🚼', '👠', '⛅️', '⏺',
-    '🕙', '🌴', '🔼', '🐤', '🔠', '🛐', '🏤', '👀', '☑️', '🍬',
-    '🎫', '☮', '💻', '🐉', '🚈', '✔️', '📧', '🈶', '🙃', '😴',
-    '🍥', '🏐', '🍎', '👟', '🕉', '🌉', '〰️', '🖱', '🚹', '🐺',
-    '💆', '🗺', '🐠', '🔯', '📡', '🐩', '🚢', '🚉', '🐍', '🍨',
-    '🕡', '🚂', '💣', '🔅', '💊', '🍉', '😔', '🎎', '👱', '🛁'
-];
+const sentence = ref(js_vars.encoded_word);
+const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
 
-// Shuffle the emojis and take as many as there are alphabets
-const shuffledEmojis = _.shuffle(emojis).slice(0, alphabets.length);
-
-// Zip the alphabets and shuffled emojis to create an emoji dictionary
-const emojiDict = _.zipObject(alphabets, shuffledEmojis);
-// Find the remaining alphabets that are not in uniqueLettersInSentence
-
-const sentence = ref('democracy');
-const lowerCaseSentence = sentence.value.toLowerCase();
-const uniqueLettersInSentence = Array.from(new Set(lowerCaseSentence.match(/[a-zA-Z]/g) || []));
-
-const remainingAlphabets = _.difference(alphabets, uniqueLettersInSentence);
-
-// Randomly pick X letters from remainingAlphabets
-const extraLetters = _.sampleSize(remainingAlphabets, uniqueLettersInSentence.length);
-
-// Combine and sort
-const displayedLetters = [...new Set([...uniqueLettersInSentence, ...extraLetters])].sort();
-
-const displayedEmojiDict = Object.fromEntries(
-    displayedLetters.map(letter => [letter, emojiDict[letter]])
-);
-
-// Convert it to an array if needed
 
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
 
 const cleanSentence = () => {
-    console.debug(js_vars)
-    
     nextTick(() => {
-    console.debug("Next tick:", inputRefs.value);
-    if (inputRefs.value[0]) {
-      inputRefs.value[0].focus();
-    } else {
-      console.debug("No input to focus on.");
-    }
-  });
+        if (inputRefs.value[0]) {
+            inputRefs.value[0].focus();
+        } else {
+            console.debug("No input to focus on.");
+        }
+    });
+
     let inputIndex = 0;
-    cleanedSentenceArray.value = Array.from(sentence.value).map((letter) => {
-        let isInput = /[a-zA-Z]/.test(letter);
-        let symbol = isInput ? (emojiDict[letter.toLowerCase()] || letter) : letter;
-        symbol = symbol === ' ' ? '&nbsp;' : symbol;
+    cleanedSentenceArray.value = Array.from(sentence.value).map((emoji) => {
+        // Check if the emoji has a corresponding letter in the dictionary
+        let isInput = Object.values(displayedEmojiDict.value).includes(emoji);
+        let symbol = isInput ? emoji : (emoji === ' ' ? '&nbsp;' : emoji);
 
         return {
             letter: symbol,
@@ -135,7 +100,9 @@ const cleanSentence = () => {
     });
 };
 
+
 const handleInput = (inputIndex) => {
+    errorMessage.value = '';
     const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
     if (currentInput && currentInput.userInput.length === 1) {
         nextTick(() => {
@@ -146,15 +113,21 @@ const handleInput = (inputIndex) => {
     }
 };
 
-const gridStyle = computed(() => {
-    const columnCount = Object.keys(displayedEmojiDict).length;
-    return {
-        'grid-template-columns': `repeat(${columnCount}, minmax(50px, 1fr))`,
-        'grid-template-rows': 'repeat(2, auto)',
-    };
-});
+ 
 
 const handleKeydown = (inputIndex, event) => {
+    if (event.key === 'Enter') {
+        if (allInputsFilled.value) {
+            handleSubmit();
+        } else {
+            // Focus on the next input field
+            nextTick(() => {
+                if (inputRefs.value[inputIndex + 1]) {
+                    inputRefs.value[inputIndex + 1].focus();
+                }
+            });
+        }
+    }
     const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
     if (currentInput && event.key === 'Backspace' && currentInput.userInput.length === 0) {
         nextTick(() => {
@@ -169,6 +142,7 @@ const handleFocus = (event) => {
 };
 
 const handleReset = () => {
+    errorMessage.value = '';
     cleanedSentenceArray.value.forEach(charObj => {
         if (charObj.input) {
             charObj.userInput = '';
@@ -181,10 +155,30 @@ const handleReset = () => {
     });
 };
 
-const handleSubmit = () => {
-    // Validate the sentence and perform the submission logic here
-};
+const errorMessage = ref('');
 
+const handleSubmit = () => {
+    let isValid = true;
+    
+    // let's first get the decoded value:
+    const invertedDict = _.invert(js_vars.alphabet_to_emoji)
+    
+    const encodedPhraseArray = Array.from(sentence.value);
+    const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
+
+    const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput).join('');
+    
+    if (decodedWord !== userInputString) {
+        isValid = false;
+    }
+
+    if (isValid) {
+        errorMessage.value = 'Correct!';
+        // Perform any additional logic for correct submission
+    } else {
+        errorMessage.value = 'Incorrect decoding. Please try again.';
+    }
+};
 
 
 onMounted(cleanSentence);
@@ -281,5 +275,6 @@ onMounted(cleanSentence);
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-}</style>
+}
+</style>
   
