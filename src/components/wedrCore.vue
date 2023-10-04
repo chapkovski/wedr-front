@@ -111,9 +111,15 @@ const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj 
 
 const cleanSentence = () => {
     console.debug(js_vars)
+    
     nextTick(() => {
-        inputRefs.value[0].focus();
-    });
+    console.debug("Next tick:", inputRefs.value);
+    if (inputRefs.value[0]) {
+      inputRefs.value[0].focus();
+    } else {
+      console.debug("No input to focus on.");
+    }
+  });
     let inputIndex = 0;
     cleanedSentenceArray.value = Array.from(sentence.value).map((letter) => {
         let isInput = /[a-zA-Z]/.test(letter);

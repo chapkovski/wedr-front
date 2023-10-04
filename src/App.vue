@@ -17,7 +17,7 @@ const columnStyle = computed(() => {
 });
 </script>
 <template>
-  <v-app app>
+  <v-app app style="padding: 0px;">
     <v-main app full-width class="non-scrollable">
       <v-row :class="{ 'flex-column': smAndDown }" style="height: 100vh;">
 
@@ -37,7 +37,7 @@ const columnStyle = computed(() => {
 
 
 <style>
-
+div#app{padding: 0px!important;}
 /* Mobile screens */
 @media (max-width: 480px) {
   html {
