@@ -86,11 +86,14 @@ const cleanSentence = () => {
     });
 
     let inputIndex = 0;
+    console.debug('sentence.value: ', sentence.value)
+    console.debug('sentence length: ', sentence.value.length)
     cleanedSentenceArray.value = Array.from(sentence.value).map((emoji) => {
         // Check if the emoji has a corresponding letter in the dictionary
         let isInput = Object.values(displayedEmojiDict.value).includes(emoji);
         let symbol = isInput ? emoji : (emoji === ' ' ? '&nbsp;' : emoji);
 
+        console.debug("emoji: ", emoji, "isInput: ", isInput, "symbol: ", symbol)
         return {
             letter: symbol,
             input: isInput,
@@ -174,6 +177,7 @@ const handleSubmit = () => {
 
     if (isValid) {
         errorMessage.value = 'Correct!';
+        $('#form').submit()
         // Perform any additional logic for correct submission
     } else {
         errorMessage.value = 'Incorrect decoding. Please try again.';
