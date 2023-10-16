@@ -169,7 +169,7 @@ const handleSubmit = () => {
     const encodedPhraseArray = Array.from(sentence.value);
     const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
 
-    const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput).join('');
+    const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput.toLowerCase()).join('');
     
     if (decodedWord !== userInputString) {
         isValid = false;
