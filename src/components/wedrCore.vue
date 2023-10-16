@@ -56,7 +56,7 @@
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
                     <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
                         @click="handleSubmit">Submit</v-btn>
-                        
+
                 </v-btn-group>
                 <v-alert color="red" class="mx-1" v-if="errorMessage">{{ errorMessage }}</v-alert>
             </v-card-actions>
@@ -75,6 +75,8 @@ const sentence = ref(js_vars.encoded_word);
 const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
 
 const startTime = ref(new Date().toISOString());
+const lastInputHappensAt = ref(new Date());
+const sinceLastInput = ref(0);
 const endTime = ref(null);
 const timeElapsed = ref(null);
 const cleanedSentenceArray = ref([]);
@@ -98,7 +100,7 @@ const cleanSentence = () => {
         let isInput = Object.values(displayedEmojiDict.value).includes(emoji);
         let symbol = isInput ? emoji : (emoji === ' ' ? '&nbsp;' : emoji);
 
-        console.debug("emoji: ", emoji, "isInput: ", isInput, "symbol: ", symbol)
+
         return {
             letter: symbol,
             input: isInput,
@@ -119,13 +121,19 @@ const handleInput = (inputIndex) => {
             }
         });
     }
-    liveSend({input: currentInput.userInput, inputIndex: inputIndex,  utcTime: new Date().toISOString()})
+    sinceLastInput.value = (new Date() - lastInputHappensAt.value) / 1000;
+    
+    lastInputHappensAt.value = new Date();
+    liveSend({
+        input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
+        sinceLastInput: sinceLastInput.value
+    })
 };
 
- 
+
 
 const handleKeydown = (inputIndex, event) => {
-    
+
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
         if (allInputsFilled.value) {
@@ -170,15 +178,15 @@ const errorMessage = ref('');
 
 const handleSubmit = () => {
     let isValid = true;
-    
+
     // let's first get the decoded value:
     const invertedDict = _.invert(js_vars.alphabet_to_emoji)
-    
+
     const encodedPhraseArray = Array.from(sentence.value);
     const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
 
     const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput.toLowerCase()).join('');
-    
+
     if (decodedWord !== userInputString) {
         isValid = false;
     }
