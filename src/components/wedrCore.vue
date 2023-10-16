@@ -77,6 +77,8 @@ const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
 
 const cleanSentence = () => {
+    console.debug('cleanSentence called')
+    window.liveSend('cleanSentence called')
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -114,12 +116,15 @@ const handleInput = (inputIndex) => {
             }
         });
     }
+    liveSend({input: currentInput.userInput, inputIndex: inputIndex,  utcTime: new Date().toISOString()})
 };
 
  
 
 const handleKeydown = (inputIndex, event) => {
+    
     if (event.key === 'Enter') {
+        event.preventDefault();  // Prevent form submission
         if (allInputsFilled.value) {
             handleSubmit();
         } else {

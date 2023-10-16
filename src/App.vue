@@ -20,6 +20,7 @@ const columnStyle = computed(() => {
 <template>
   <v-app app style="padding: 0px;">
     <v-main app full-width class="non-scrollable">
+      
       <v-row :class="{ 'flex-column': smAndDown }" style="height: 100vh;">
 
         <v-col :cols="wedrCoreCols" :style="columnStyle">
