@@ -1,5 +1,8 @@
 <template>
     <div>
+        <input type="hidden" name="startTime" :value="startTime">
+        <input type="hidden" name="endTime" :value="endTime">
+        <input type="hidden" name="timeElapsed" :value="timeElapsed">
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
             <v-card-title>
                 Dictionary
@@ -71,14 +74,14 @@ import _ from 'lodash';
 const sentence = ref(js_vars.encoded_word);
 const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
 
-
+const startTime = ref(new Date().toISOString());
+const endTime = ref(null);
+const timeElapsed = ref(null);
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
 
 const cleanSentence = () => {
-    console.debug('cleanSentence called')
-    window.liveSend('cleanSentence called')
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -182,7 +185,12 @@ const handleSubmit = () => {
 
     if (isValid) {
         errorMessage.value = 'Correct!';
-        $('#form').submit()
+        endTime.value = new Date().toISOString();
+        timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
+
+        nextTick(() => {
+            $('#form').submit()
+        });
         // Perform any additional logic for correct submission
     } else {
         errorMessage.value = 'Incorrect decoding. Please try again.';
