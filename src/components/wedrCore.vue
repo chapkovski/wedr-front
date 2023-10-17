@@ -3,9 +3,16 @@
         <input type="hidden" name="startTime" :value="startTime">
         <input type="hidden" name="endTime" :value="endTime">
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
+        <v-dialog v-model="showModal" max-width="290" persistent>
+            
+            <v-alert text="success" type="success"></v-alert>
+
+            <v-btn text @click="closingModal">Submit</v-btn>
+
+        </v-dialog>
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
             <v-card-title>
-                Dictionary
+                Dictionary <v-btn @click="showModal = true">Open Modal</v-btn>
             </v-card-title>
             <v-card-text class="m-3 p-3 dictionary-text-card">
                 <div>
@@ -70,7 +77,7 @@
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
 import _ from 'lodash';
-
+const showModal = ref(false);
 const sentence = ref(js_vars.encoded_word);
 const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
 
@@ -82,7 +89,15 @@ const timeElapsed = ref(null);
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
+const closingModal = () => {
+    showModal.value = false;
+    nextTick(
+        () => {
+            $('#form').submit()
+        }
+    )
 
+}
 const cleanSentence = () => {
     nextTick(() => {
         if (inputRefs.value[0]) {
@@ -122,7 +137,7 @@ const handleInput = (inputIndex) => {
         });
     }
     sinceLastInput.value = (new Date() - lastInputHappensAt.value) / 1000;
-    
+
     lastInputHappensAt.value = new Date();
     liveSend({
         input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
@@ -197,7 +212,7 @@ const handleSubmit = () => {
         timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
 
         nextTick(() => {
-            $('#form').submit()
+            showModal.value = true;
         });
         // Perform any additional logic for correct submission
     } else {
