@@ -6,14 +6,14 @@ import { computed } from 'vue';
 import { useDisplay } from 'vuetify'
 const { smAndDown } = useDisplay();
 
-const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 12)); //should be changed to 8
+const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 8)); //should be changed to 8
 const chatContainerCols = computed(() => (smAndDown.value ? 12 : 4));
 
 const columnStyle = computed(() => {
   return {
     'overflow-y': 'auto',
-    'max-height': smAndDown.value ? '100vh' : '100vh'
-    // 'max-height': smAndDown.value ? '50vh' : '100vh'
+    // 'max-height': smAndDown.value ? '100vh' : '100vh'
+    'max-height': smAndDown.value ? '50vh' : '100vh'
   };
 });
 </script>
@@ -27,7 +27,7 @@ const columnStyle = computed(() => {
           <wedrCore></wedrCore>
         </v-col>
 
-        <v-col v-if="false" :cols="chatContainerCols" :style="columnStyle" class="chat-container-col">
+        <v-col v-if="true" :cols="chatContainerCols" :style="columnStyle" class="chat-container-col">
           <ChatContainer></ChatContainer>
         </v-col>
 

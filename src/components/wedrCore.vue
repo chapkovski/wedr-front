@@ -5,7 +5,7 @@
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
             <v-card-title>
-                Dictionary
+                Dictionary {{ store.count }} 
             </v-card-title>
             <v-card-text class="m-3 p-3 dictionary-text-card">
                 <div>
@@ -69,6 +69,10 @@
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
+import { useMyStore } from '../store'
+
+const store = useMyStore()
+ 
 import _ from 'lodash';
 
 const sentence = ref(js_vars.encoded_word);
@@ -177,6 +181,9 @@ const handleReset = () => {
 const errorMessage = ref('');
 
 const handleSubmit = () => {
+    console.debug("WHAT THE FUCK??S")
+    store.count++
+    console.debug('right after increment', store.count.value)
     let isValid = true;
 
     // let's first get the decoded value:
