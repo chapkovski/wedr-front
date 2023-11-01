@@ -4,9 +4,7 @@
         <input type="hidden" name="endTime" :value="endTime">
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
-            <v-card-title>
-                Dictionary {{ store.count }} 
-            </v-card-title>
+
             <v-card-text class="m-3 p-3 dictionary-text-card">
                 <div>
                     <div class="flex-container">
@@ -69,10 +67,10 @@
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
-import { useMyStore } from '../store'
 
-const store = useMyStore()
- 
+import { useWebSocketStore } from '../store';
+
+const wsStore = useWebSocketStore();
 import _ from 'lodash';
 
 const sentence = ref(js_vars.encoded_word);
@@ -88,6 +86,7 @@ const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
 
 const cleanSentence = () => {
+
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -116,6 +115,7 @@ const cleanSentence = () => {
 
 
 const handleInput = (inputIndex) => {
+
     errorMessage.value = '';
     const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
     if (currentInput && currentInput.userInput.length === 1) {
@@ -126,12 +126,15 @@ const handleInput = (inputIndex) => {
         });
     }
     sinceLastInput.value = (new Date() - lastInputHappensAt.value) / 1000;
-    
+
     lastInputHappensAt.value = new Date();
-    liveSend({
-        input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
-        sinceLastInput: sinceLastInput.value
-    })
+    wsStore.sendMessage(
+        'input',
+        {
+            input:currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
+            sinceLastInput: sinceLastInput.value
+        }
+    )
 };
 
 
@@ -181,9 +184,7 @@ const handleReset = () => {
 const errorMessage = ref('');
 
 const handleSubmit = () => {
-    console.debug("WHAT THE FUCK??S")
-    store.count++
-    console.debug('right after increment', store.count.value)
+
     let isValid = true;
 
     // let's first get the decoded value:
