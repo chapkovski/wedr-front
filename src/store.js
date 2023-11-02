@@ -5,7 +5,7 @@ import { useWebSocket } from '@vueuse/core';
 export const useWebSocketStore = defineStore({
   id: 'webSocketStore',
   state: () => ({
-    messages: [],
+    messages: js_vars.messages,
     status: null,
     data: null,
     send: null  // Initialize 'send' as null
@@ -23,6 +23,9 @@ export const useWebSocketStore = defineStore({
           console.debug("Message received!", json_data);
           that.data = data.value;
           if (json_data && json_data['0']) {
+            const newMessage = json_data['0'];
+            newMessage['own'] =  window.ownCode == newMessage['who'];
+            console.debug('newMessage', newMessage);
             this.messages.push(json_data['0']);  // Add message data to the messages array
           }
           console.debug('messages', this.messages)

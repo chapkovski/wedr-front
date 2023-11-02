@@ -73,8 +73,8 @@ import { useWebSocketStore } from '../store';
 const wsStore = useWebSocketStore();
 import _ from 'lodash';
 
-const sentence = ref(js_vars.encoded_word);
-const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
+const sentence = ref(window.encodedWord );
+const displayedEmojiDict = ref(window.groupDict)
 
 const startTime = ref(new Date().toISOString());
 const lastInputHappensAt = ref(new Date());
@@ -184,14 +184,16 @@ const handleReset = () => {
 const errorMessage = ref('');
 
 const handleSubmit = () => {
-
+    console.debug('we are in handleSubmit')
     let isValid = true;
 
     // let's first get the decoded value:
-    const invertedDict = _.invert(js_vars.alphabet_to_emoji)
-
+    const invertedDict = _.invert(window.groupDict)
+    console.debug('invertedDict: ', invertedDict)
+    
     const encodedPhraseArray = Array.from(sentence.value);
     const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
+    console.debug('decodedWord: ', decodedWord)
 
     const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput.toLowerCase()).join('');
 

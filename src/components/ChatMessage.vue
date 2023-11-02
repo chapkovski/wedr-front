@@ -2,39 +2,46 @@
        <div
        :ref="rootElement"
         :class="['chat-message', authorClass, { 'first-in-series': firstInSeries, 'last-in-series': lastInSeries }]">
-      <div v-if="showAvatar && author === 1" class="avatar" :style="{ backgroundColor: avatarColor }">
-        P{{ author }}
+      <div v-if="showAvatar && !own" class="avatar" :style="{ backgroundColor: avatarColor }">
+        P2
       </div>
       <div class="message-box" :class="[{ 'no-avatar': !showAvatar }, messageBoxClass]" >
         <span>{{ message }}</span>
       </div>
-      <div v-if="showAvatar && author === 2" class="avatar" :style="{ backgroundColor: avatarColor }">
-        P{{ author }}
+      <div v-if="showAvatar && own" class="avatar" :style="{ backgroundColor: avatarColor }">
+        Me
       </div>
     </div>
   </template>
   
-  
-  
-  <script>
-  export default {
-    props: ['author', 'message', 'showAvatar', 'firstInSeries', 'lastInSeries'],
-    computed: {
-        messageBoxClass() {
-      if (this.firstInSeries) {
-        return this.author === 1 ? 'rounded-top-right' : 'rounded-top-left';
-      }
-      return '';
-    },
-      authorClass() {
-        return this.author === 1 ? 'author-1' : 'author-2';
-      },
-      avatarColor() {
-        return this.author === 1 ? '#4CAF50' : '#2196F3';
-      },
-    },
-  };
-  </script>
+  <script setup>
+import { computed, defineProps } from 'vue';
+
+const props = defineProps({
+  author: Number,
+  own: Boolean,
+  message: String,
+  showAvatar: Boolean,
+  firstInSeries: Boolean,
+  lastInSeries: Boolean
+});
+
+const messageBoxClass = computed(() => {
+  if (props.firstInSeries) {
+    return props.own ? 'rounded-top-right' : 'rounded-top-left';
+  }
+  return '';
+});
+
+const authorClass = computed(() => {
+  return props.own ? 'author-2' : 'author-1';
+});
+
+const avatarColor = computed(() => {
+  return props.own ? '#2196F3' : '#4CAF50';  // Assuming the own player has a different color
+});
+</script>
+
   
   <style>
  .chat-message {

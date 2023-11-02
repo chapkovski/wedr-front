@@ -3,9 +3,9 @@
     <v-card class="chat-box">
         <v-card-text class="chat-messages">
             
-            <ChatMessage v-for="(msg, index) in augmentedChatProtocol" :key="index" :author="msg.author"
-                :message="msg.message" :showAvatar="msg.showAvatar" :firstInSeries="msg.firstInSeries"
-                :lastInSeries="msg.lastInSeries" :ref="allMessagesRef" />
+            <ChatMessage v-for="(msg, index) in augmentedChatProtocol" :key="index" 
+            v-bind="msg"
+                 :ref="allMessagesRef" />
                 <div ref="lastMSG" style="height: 50px;">&nbsp;<br>&nbsp<br></div>
         </v-card-text>
 
