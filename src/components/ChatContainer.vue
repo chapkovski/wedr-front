@@ -1,6 +1,9 @@
 
 <template>
     <v-card class="chat-box">
+        <v-card-title>
+          Chat:
+        <hr></v-card-title>
         <v-card-text class="chat-messages">
             
             <ChatMessage v-for="(msg, index) in augmentedChatProtocol" :key="index" 
@@ -25,7 +28,7 @@
 
 <script setup>
 import _ from 'lodash'
-import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { ref, computed,  watch , nextTick} from 'vue';
 
 import { useWebSocketStore } from '../store';
 
@@ -36,12 +39,11 @@ import ChatMessage from './ChatMessage.vue';
 const allMessagesRef = ref([]);
 const lastMSG = ref();
 const scrollToLastMessage = () => {
+    console.debug('DO WE REACH SCROLL TO LAST MESSAGE?1!')
     lastMSG.value.scrollIntoView({ behavior: "smooth" });
 };
 
-watch(() => wsStore.messages, () => {
-  scrollToLastMessage();
-});
+
 // Scroll to the bottom when the component mounts
 
 
@@ -72,16 +74,23 @@ const augmentedChatProtocol = computed(() => {
   let lastInSeries = false;
   return wsStore.messages.map((msg, index, arr) => {
     const nextMsg = arr[index + 1];
-    if (!nextMsg || nextMsg.author !== msg.author) {
+    if (!nextMsg || nextMsg.who !== msg.who) {
       lastInSeries = true;
     } else {
       lastInSeries = false;
     }
-    const firstInSeries = !arr[index - 1] || arr[index - 1].author !== msg.author;
+    const firstInSeries = !arr[index - 1] || arr[index - 1].who !== msg.who;
     const showAvatar = firstInSeries;
     return { ...msg, showAvatar, firstInSeries, lastInSeries };
   });
 });
+
+watch(augmentedChatProtocol, async  () => {
+    console.debug('do we have a new message?')
+    await nextTick();
+    scrollToLastMessage();
+    console.debug('and do we reach that one??!')
+}, {deep: true});
 
 </script>
 
