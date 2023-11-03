@@ -11,13 +11,14 @@
 
         </v-dialog>
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
-            <v-card-title>
-                Dictionary <v-btn @click="showModal = true">Open Modal</v-btn>
-            </v-card-title>
-            <v-card-text class="m-3 p-3 dictionary-text-card">
+
+            <v-card-text class="m-3 p-3 dictionary-text-card non-selectable">
+                <v-card-title>
+                    Dictionary:
+                </v-card-title>
                 <div>
                     <div class="flex-container">
-                        <div v-for="(emoji, letter) in displayedEmojiDict" :key="letter" class="flex-item">
+                        <div v-for="(emoji, letter) in fullDict" :key="letter" class="flex-item">
                             <div class="emoji">
                                 {{ emoji }}
                             </div>
@@ -31,15 +32,15 @@
         </v-card>
 
 
-        <v-card outlined elevation="3" class="my-3">
+        <v-card outlined elevation="3" class="m-3 p-3 my-3">
             <v-card-title>
-                Encoded Sentence
+                Encoded Word:
             </v-card-title>
             <v-card-text>
                 <!-- Grid container for emojis and input fields -->
                 <div class="input-flex-container">
                     <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
-                        <div class="input-flex-item">
+                        <div class="input-flex-item non-selectable">
                             <div class="emoji" v-html="displayedEmojiDict[charObj.letter.toLowerCase()] || charObj.letter">
                             </div>
                             <div>
@@ -61,14 +62,16 @@
             <v-card-actions>
                 <v-btn-group>
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
-                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled"
-                        @click="handleSubmit">Submit</v-btn>
+                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled" @click="handleSubmit"
+                        v-if="false">Submit</v-btn>
 
                 </v-btn-group>
                 <v-alert color="red" class="mx-1" v-if="errorMessage">{{ errorMessage }}</v-alert>
             </v-card-actions>
         </v-card>
-
+        <v-alert color="info" class="m-3 p-3 my-3" v-if="youCompleted">
+            You completed the puzzle! Please wait for the other player to finish.
+        </v-alert>
 
 
     </div>
@@ -76,11 +79,15 @@
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
-import _ from 'lodash';
-const showModal = ref(false);
-const sentence = ref(js_vars.encoded_word);
-const displayedEmojiDict = ref(js_vars.alphabet_to_emoji)
 
+import { useWebSocketStore } from '../store';
+
+const wsStore = useWebSocketStore();
+import _ from 'lodash';
+const youCompleted = ref(false);
+const sentence = ref(window.encodedWord);
+const displayedEmojiDict = ref(window.groupDict)
+const fullDict = window.partialDict;
 const startTime = ref(new Date().toISOString());
 const lastInputHappensAt = ref(new Date());
 const sinceLastInput = ref(0);
@@ -99,6 +106,7 @@ const closingModal = () => {
 
 }
 const cleanSentence = () => {
+
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -126,7 +134,11 @@ const cleanSentence = () => {
 };
 
 
+
+
 const handleInput = (inputIndex) => {
+
+
     errorMessage.value = '';
     const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
     if (currentInput && currentInput.userInput.length === 1) {
@@ -139,11 +151,43 @@ const handleInput = (inputIndex) => {
     sinceLastInput.value = (new Date() - lastInputHappensAt.value) / 1000;
 
     lastInputHappensAt.value = new Date();
-    liveSend({
-        input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
-        sinceLastInput: sinceLastInput.value
-    })
+    wsStore.sendMessage(
+        'input',
+        {
+            input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
+            sinceLastInput: sinceLastInput.value
+        }
+    )
+    const allInputsFilled = cleanedSentenceArray.value.every(
+        (input) => input.userInput.trim().length > 0
+    );
+
+    if (allInputsFilled) {
+        const userInputString = cleanedSentenceArray.value
+            .map(obj => obj.userInput.toLowerCase())
+            .join('');
+        const invertedDict = _.invert(window.groupDict);
+        const encodedPhraseArray = Array.from(sentence.value);
+        const decodedWord = encodedPhraseArray
+            .map(emoji => invertedDict[emoji] || emoji)
+            .join('');
+
+        if (decodedWord === userInputString) {
+            youCompleted.value = true;
+            // Send a WebSocket message for successful decoding
+            wsStore.sendMessage('completed', {
+                decodedWord: userInputString,
+                completedAt: new Date().toISOString(),
+                timeElapsed: (new Date() - new Date(startTime.value)) / 1000,
+                startTime: startTime.value,
+
+            });
+        } else {
+            errorMessage.value = 'Incorrect decoding. Please try again.';
+        }
+    }
 };
+
 
 
 
@@ -152,7 +196,7 @@ const handleKeydown = (inputIndex, event) => {
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
         if (allInputsFilled.value) {
-            handleSubmit();
+            // handleSubmit();
         } else {
             // Focus on the next input field
             nextTick(() => {
@@ -192,13 +236,15 @@ const handleReset = () => {
 const errorMessage = ref('');
 
 const handleSubmit = () => {
+    console.debug('we are in handleSubmit')
     let isValid = true;
 
     // let's first get the decoded value:
-    const invertedDict = _.invert(js_vars.alphabet_to_emoji)
+    const invertedDict = _.invert(window.groupDict)
 
     const encodedPhraseArray = Array.from(sentence.value);
     const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
+
 
     const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput.toLowerCase()).join('');
 
