@@ -79,15 +79,18 @@
   
 <script setup>
 import { ref, onMounted, nextTick, computed } from 'vue';
-
+import { storeToRefs } from "pinia";
 import { useWebSocketStore } from '../store';
 
 const wsStore = useWebSocketStore();
+const { time_to_go, sentence, partialDict:fullDict,  groupDict:displayedEmojiDict } =  storeToRefs(useWebSocketStore());
+
+
 import _ from 'lodash';
 const youCompleted = ref(false);
-const sentence = ref(window.encodedWord);
-const displayedEmojiDict = ref(window.groupDict)
-const fullDict = window.partialDict;
+
+
+
 const startTime = ref(new Date().toISOString());
 const lastInputHappensAt = ref(new Date());
 const sinceLastInput = ref(0);
@@ -106,7 +109,7 @@ const closingModal = () => {
 
 }
 const cleanSentence = () => {
-
+   
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -116,8 +119,7 @@ const cleanSentence = () => {
     });
 
     let inputIndex = 0;
-    console.debug('sentence.value: ', sentence.value)
-    console.debug('sentence length: ', sentence.value.length)
+
     cleanedSentenceArray.value = Array.from(sentence.value).map((emoji) => {
         // Check if the emoji has a corresponding letter in the dictionary
         let isInput = Object.values(displayedEmojiDict.value).includes(emoji);

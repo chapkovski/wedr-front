@@ -1,12 +1,18 @@
 <script setup>
 
+
+import { useWebSocketStore } from './store';
+import { storeToRefs } from "pinia";
+const wsStore = useWebSocketStore();
+const { remaining_time } =  storeToRefs(useWebSocketStore());
+ 
 import ChatContainer from './components/ChatContainer.vue';
 import wedrCore from './components/wedrCore.vue';
 import { computed, ref } from 'vue';
 import { useDisplay } from 'vuetify'
 const { smAndDown } = useDisplay();
 const drawer = ref(false);
-
+const standalone = ref(window.standalone || false);
 const instructionsHtml = document.getElementById('instructions').innerHTML;
 const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 8)); //should be changed to 8
 const chatContainerCols = computed(() => (smAndDown.value ? 12 : 4));
@@ -47,8 +53,10 @@ const chatColumnStyle = computed(() => {
     </v-navigation-drawer>
     <v-app-bar app>
       <v-toolbar-title>Decoding task</v-toolbar-title>
-
-      Remember: if your partner leaves the chat, you can submit any code on Prolific and we'll pay you for your time!
+      <vue-countdown :time="remaining_time* 1000" v-slot="{ days, hours, minutes, seconds }">
+    Time Remaining：{{ days }} days, {{ hours }} hours, {{ minutes }} minutes, {{ seconds }} seconds.
+  </vue-countdown>
+      <span v-if="!standalone">Remember: if your partner leaves the chat, you can submit any code on Prolific and we'll pay you for your time!</span>
       <v-spacer></v-spacer> <!-- This pushes the menu items to the right -->
 
       <v-btn outlined elevation="3" @click="drawer = !drawer">
@@ -66,7 +74,7 @@ const chatColumnStyle = computed(() => {
           <wedrCore></wedrCore>
         </v-col>
 
-        <v-col v-if="true" :cols="chatContainerCols" :style="chatColumnStyle" class="chat-container-col">
+        <v-col v-if="!standalone" :cols="chatContainerCols" :style="chatColumnStyle" class="chat-container-col">
           <ChatContainer></ChatContainer>
         </v-col>
 
