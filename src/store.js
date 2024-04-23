@@ -1,6 +1,7 @@
-// wsStore.js
 import { defineStore } from 'pinia';
 import { useWebSocket } from '@vueuse/core';
+
+// wsStore.js
 
 export const useWebSocketStore = defineStore({
   id: 'webSocketStore',
@@ -13,7 +14,9 @@ export const useWebSocketStore = defineStore({
     partialDict: js_vars.partialDict,
     data: null,
     allowedToProceed: false,
-    send: null  // Initialize 'send' as null
+    group_completed: js_vars.group_completed,
+    player_completed: js_vars.player_completed,
+    send: null,  // Initialize 'send' as null
   }),
   actions: {
     handle_message(newMessage) {
@@ -21,22 +24,13 @@ export const useWebSocketStore = defineStore({
       this.messages.push(newMessage); // Add message data to the messages array
     },
     handle_completed(newMessage) {
-      const { group_completed, who, new_data, timeOver } = newMessage;
-      if (group_completed) {
-        if (timeOver) {
-          this.allowedToProceed = true;
-          document.getElementById('form').submit();
-          return
-        }
-        if (new_data) {
-          const { encodedWord, groupDict, partialDict } = new_data;
-          this.encodedWord = encodedWord;
-          this.groupDict = groupDict;
-          this.partialDict = partialDict;
-
-        }
-      }
+      console.debug("Completed message received!", newMessage);
+      const { player_completed, group_completed } = newMessage;
+      this.player_completed = player_completed;
+      this.group_completed = group_completed;
     },
+
+
     initializeWebSocket() {
       const that = this;
       const { status, data, send } = useWebSocket(window.fullPath, {
@@ -60,19 +54,15 @@ export const useWebSocketStore = defineStore({
         onConnected: async () => {
           console.debug("Connected!");
           that.status = 'connected';
-
-
         },
       });
       that.status = status;
-
-
     },
     async sendMessage(type, data) {
       // Use the 'send' function from the state
       liveSend({
         type, data
-      })
+      });
     },
-  },
+  }
 });

@@ -31,8 +31,10 @@
             </v-card-text>
         </v-card>
 
-
-        <v-card outlined elevation="3" class="m-3 p-3 my-3">
+        <v-alert color="info" class="m-3 p-3 my-3" v-if="player_completed" style="opacity: 1; z-index: 10000;">
+            You completed the puzzle! Please wait for the other player to finish.
+        </v-alert>
+        <v-card outlined elevation="3" class="m-3 p-3 my-3" :class="{ 'is-disabled': player_completed }">
             <v-card-title>
                 Encoded Word:
             </v-card-title>
@@ -55,6 +57,7 @@
 
             </v-card-text>
             <v-card-actions>
+
                 <v-btn-group>
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
                     <v-btn elevation=3 color='success' :flat='false' :disabled="!allCorrect"
@@ -66,9 +69,7 @@
                 </v-alert>
             </v-card-actions>
         </v-card>
-        <v-alert color="info" class="m-3 p-3 my-3" v-if="youCompleted">
-            You completed the puzzle! Please wait for the other player to finish.
-        </v-alert>
+
 
 
     </div>
@@ -76,16 +77,22 @@
 
 <script setup>
 import _ from 'lodash';
-import { ref, onMounted, nextTick, computed } from 'vue';
+import { ref, watch, nextTick, computed } from 'vue';
 import { useWebSocketStore } from '../store';
 import { storeToRefs } from "pinia";
 
+const wsStore = useWebSocketStore();
+const { encodedWord, partialDict, group_completed, decodedWord, player_completed } = storeToRefs(wsStore);
+// lets watch group_completed:
+watch(group_completed, (newVal) => {
+    if (newVal === true) {
+        $('#form').submit()
+    }
 
-const { encodedWord, partialDict, groupDict, decodedWord } = storeToRefs(useWebSocketStore());
+})
 
+const showModal = ref(false)
 
-
-const youCompleted = ref(false);
 const startTime = ref(new Date().toISOString());
 
 const endTime = ref(null);
@@ -127,7 +134,18 @@ const closingModal = () => {
     showModal.value = false;
     nextTick(
         () => {
-            $('#form').submit()
+            // TODO: send message here to show completion by this player only.
+            wsStore.sendMessage(
+                'answer',
+                {
+                    completedAt: new Date().toISOString(),
+                    startTime: startTime.value,
+                    endTime: endTime.value,
+                    timeElapsed: timeElapsed.value,
+
+                }
+            )
+
         }
     )
 
@@ -158,7 +176,7 @@ const handleKeydown = (inputIndex, event) => {
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
         if (allInputsFilled.value) {
-            // handleSubmit();  // You can define this function to handle submission
+            handleSubmit();  // You can define this function to handle submission
         } else {
             // Focus on the next input field
             nextTick(() => {
@@ -228,33 +246,16 @@ const handleReset = () => {
 
 
 const handleSubmit = () => {
-    let isValid = true;
 
-    // let's first get the decoded value:
-    const invertedDict = _.invert(window.groupDict)
+    errorMessage.value = 'Correct!';
+    endTime.value = new Date().toISOString();
+    timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
 
-    const encodedPhraseArray = Array.from(sentence.value);
-    const decodedWord = encodedPhraseArray.map(emoji => invertedDict[emoji] || emoji).join('');
+    nextTick(() => {
+        showModal.value = true;
+    });
+    // Perform any additional logic for correct submission
 
-
-    const userInputString = cleanedSentenceArray.value.map(obj => obj.userInput.toLowerCase()).join('');
-
-    if (decodedWord !== userInputString) {
-        isValid = false;
-    }
-
-    if (isValid) {
-        errorMessage.value = 'Correct!';
-        endTime.value = new Date().toISOString();
-        timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
-
-        nextTick(() => {
-            showModal.value = true;
-        });
-        // Perform any additional logic for correct submission
-    } else {
-        errorMessage.value = 'Incorrect decoding. Please try again.';
-    }
 };
 
 
@@ -352,5 +353,12 @@ const handleSubmit = () => {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+.is-disabled {
+    pointer-events: none;
+    /* Prevents clicking and interactions */
+    opacity: 0.5;
+    /* Greys out the content visually */
 }
 </style>
