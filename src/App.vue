@@ -6,7 +6,9 @@ import { computed, ref } from 'vue';
 import { useDisplay } from 'vuetify'
 const { smAndDown } = useDisplay();
 const drawer = ref(false);
-
+const timerDone = () => {
+  $('#form').submit();
+};
 const instructionsHtml = document.getElementById('instructions').innerHTML;
 const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 8)); //should be changed to 8
 const chatContainerCols = computed(() => (smAndDown.value ? 12 : 4));
@@ -23,8 +25,8 @@ const chatColumnStyle = computed(() => {
     'overflow-y': 'auto',
     'border': '1px solid black',
     'max-height': smAndDown.value ? 'calc(50vh - 50px)' : '100vh',
-    'position':smAndDown.value ? 'absolute':'relative',
-    'bottom':smAndDown.value ? '0px':'0px',
+    'position': smAndDown.value ? 'absolute' : 'relative',
+    'bottom': smAndDown.value ? '0px' : '0px',
 
   };
 });
@@ -47,7 +49,11 @@ const chatColumnStyle = computed(() => {
     </v-navigation-drawer>
     <v-app-bar app>
       <v-toolbar-title>Decoding task</v-toolbar-title>
-
+      <v-alert elevation="3" bordered outlined height="40" class="mx-1">
+        <vue-countdown :time="10 * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
+          <span>Remaining&nbsp;time:&nbsp;{{ minutes }}:{{ seconds }}</span>
+        </vue-countdown>
+      </v-alert>
       Remember: if your partner leaves the chat, you can submit any code on Prolific and we'll pay you for your time!
       <v-spacer></v-spacer> <!-- This pushes the menu items to the right -->
 
