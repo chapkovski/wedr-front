@@ -28,11 +28,11 @@ export const useWebSocketStore = defineStore({
           return
         }
         if (new_data) {
-          const {encodedWord, groupDict, partialDict} = new_data;
+          const { encodedWord, groupDict, partialDict } = new_data;
           this.encodedWord = encodedWord;
           this.groupDict = groupDict;
           this.partialDict = partialDict;
-            
+
         }
       }
     },

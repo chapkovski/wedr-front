@@ -4,7 +4,7 @@
         <input type="hidden" name="endTime" :value="endTime">
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
         <v-dialog v-model="showModal" max-width="290" persistent>
-            
+
             <v-alert text="success" type="success"></v-alert>
 
             <v-btn text @click="closingModal">Submit</v-btn>
@@ -18,7 +18,7 @@
                 </v-card-title>
                 <div>
                     <div class="flex-container">
-                        <div v-for="(emoji, letter) in fullDict" :key="letter" class="flex-item">
+                        <div v-for="(emoji, letter) in partialDict" :key="letter" class="flex-item">
                             <div class="emoji">
                                 {{ emoji }}
                             </div>
@@ -39,24 +39,19 @@
             <v-card-text>
                 <!-- Grid container for emojis and input fields -->
                 <div class="input-flex-container">
-                    <template v-for="(charObj, index) in cleanedSentenceArray" :key="index">
+                    <template v-for="(charObj, index) in decodedWordForInput" :key="index">
                         <div class="input-flex-item non-selectable">
-                            <div class="emoji" v-html="displayedEmojiDict[charObj.letter.toLowerCase()] || charObj.letter">
-                            </div>
+                            <div class="emoji" v-html="charObj.letter"></div>
                             <div>
-                                <input class="input-field" v-if="charObj.input" autocomplete="off"
-                                    :name="`input-${charObj.inputIndex}`" v-model="charObj.userInput"
-                                    @input="handleInput(charObj.inputIndex)"
+                                <input class="input-field" autocomplete="off" :name="`input-${charObj.inputIndex}`"
+                                    v-model="userInputData[charObj.inputIndex]"
+                                    @input="handleInput(charObj.inputIndex, $event.target.value)"
                                     @keydown="handleKeydown(charObj.inputIndex, $event)" ref="inputRefs" type="text"
                                     maxlength="1" @focus="handleFocus($event)" />
                             </div>
                         </div>
                     </template>
                 </div>
-
-
-
-
 
             </v-card-text>
             <v-card-actions>
@@ -76,26 +71,34 @@
 
     </div>
 </template>
-  
+
 <script setup>
-import { ref, onMounted, nextTick, computed } from 'vue';
-
-import { useWebSocketStore } from '../store';
-
-const wsStore = useWebSocketStore();
 import _ from 'lodash';
+import { ref, onMounted, nextTick, computed } from 'vue';
+import { useWebSocketStore } from '../store';
+import { storeToRefs } from "pinia";
+
+
+const { encodedWord, partialDict, groupDict, decodedWord } = storeToRefs(useWebSocketStore());
+console.debug('groupDict', groupDict.value);
+const userInputData = ref({});
+
+
 const youCompleted = ref(false);
-const sentence = ref(window.encodedWord);
-const displayedEmojiDict = ref(window.groupDict)
-const fullDict = window.partialDict;
 const startTime = ref(new Date().toISOString());
-const lastInputHappensAt = ref(new Date());
-const sinceLastInput = ref(0);
+
 const endTime = ref(null);
 const timeElapsed = ref(null);
 const cleanedSentenceArray = ref([]);
 const inputRefs = ref([]);
 const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
+const decodedWordForInput = computed(() => encodedWord.value.map((emoji, index) => {
+    return {
+        letter: emoji,
+        userInput: '',
+        inputIndex: index
+    }
+}))
 const closingModal = () => {
     showModal.value = false;
     nextTick(
@@ -105,87 +108,17 @@ const closingModal = () => {
     )
 
 }
-const cleanSentence = () => {
 
-    nextTick(() => {
-        if (inputRefs.value[0]) {
-            inputRefs.value[0].focus();
-        } else {
-            console.debug("No input to focus on.");
-        }
-    });
-
-    let inputIndex = 0;
-    console.debug('sentence.value: ', sentence.value)
-    console.debug('sentence length: ', sentence.value.length)
-    cleanedSentenceArray.value = Array.from(sentence.value).map((emoji) => {
-        // Check if the emoji has a corresponding letter in the dictionary
-        let isInput = Object.values(displayedEmojiDict.value).includes(emoji);
-        let symbol = isInput ? emoji : (emoji === ' ' ? '&nbsp;' : emoji);
-
-
-        return {
-            letter: symbol,
-            input: isInput,
-            userInput: '',
-            inputIndex: isInput ? inputIndex++ : null,
-        };
-    });
-};
-
-
-
-
-const handleInput = (inputIndex) => {
-
-
+const handleInput = (inputIndex, value) => {
     errorMessage.value = '';
-    const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
-    if (currentInput && currentInput.userInput.length === 1) {
+    if (value && value.length === 1) {
         nextTick(() => {
             if (inputRefs.value[inputIndex + 1]) {
                 inputRefs.value[inputIndex + 1].focus();
             }
         });
     }
-    sinceLastInput.value = (new Date() - lastInputHappensAt.value) / 1000;
-
-    lastInputHappensAt.value = new Date();
-    wsStore.sendMessage(
-        'input',
-        {
-            input: currentInput.userInput, inputIndex: inputIndex, utcTime: new Date().toISOString(),
-            sinceLastInput: sinceLastInput.value
-        }
-    )
-    const allInputsFilled = cleanedSentenceArray.value.every(
-        (input) => input.userInput.trim().length > 0
-    );
-
-    if (allInputsFilled) {
-        const userInputString = cleanedSentenceArray.value
-            .map(obj => obj.userInput.toLowerCase())
-            .join('');
-        const invertedDict = _.invert(window.groupDict);
-        const encodedPhraseArray = Array.from(sentence.value);
-        const decodedWord = encodedPhraseArray
-            .map(emoji => invertedDict[emoji] || emoji)
-            .join('');
-
-        if (decodedWord === userInputString) {
-            youCompleted.value = true;
-            // Send a WebSocket message for successful decoding
-            wsStore.sendMessage('completed', {
-                decodedWord: userInputString,
-                completedAt: new Date().toISOString(),
-                timeElapsed: (new Date() - new Date(startTime.value)) / 1000,
-                startTime: startTime.value,
-
-            });
-        } else {
-            errorMessage.value = 'Incorrect decoding. Please try again.';
-        }
-    }
+    userInputData.value[inputIndex] = value;
 };
 
 
@@ -215,6 +148,7 @@ const handleKeydown = (inputIndex, event) => {
         });
     }
 };
+
 const handleFocus = (event) => {
     event.target.select();
 };
@@ -236,7 +170,6 @@ const handleReset = () => {
 const errorMessage = ref('');
 
 const handleSubmit = () => {
-    console.debug('we are in handleSubmit')
     let isValid = true;
 
     // let's first get the decoded value:
@@ -267,9 +200,9 @@ const handleSubmit = () => {
 };
 
 
-onMounted(cleanSentence);
+
 </script>
-  
+
 <style scoped>
 @media (max-width: 480px) {
     html {
@@ -363,4 +296,3 @@ onMounted(cleanSentence);
     -ms-user-select: none;
 }
 </style>
-  
