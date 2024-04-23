@@ -7,6 +7,9 @@ export const useWebSocketStore = defineStore({
   state: () => ({
     messages: js_vars.messages,
     status: null,
+    encodedWord: window.encodedWord,
+    groupDict: window.groupDict,
+    partialDict: window.partialDict,
     data: null,
     allowedToProceed: false,
     send: null  // Initialize 'send' as null
@@ -17,7 +20,7 @@ export const useWebSocketStore = defineStore({
       this.messages.push(newMessage); // Add message data to the messages array
     },
     handle_completed(newMessage) {
-      const { group_completed, who, new_data, timeOver} = newMessage;
+      const { group_completed, who, new_data, timeOver } = newMessage;
       if (group_completed) {
         if (timeOver) {
           this.allowedToProceed = true;
@@ -25,7 +28,11 @@ export const useWebSocketStore = defineStore({
           return
         }
         if (new_data) {
-          this.data = new_data;
+          const {encodedWord, groupDict, partialDict} = new_data;
+          this.encodedWord = encodedWord;
+          this.groupDict = groupDict;
+          this.partialDict = partialDict;
+            
         }
       }
     },
