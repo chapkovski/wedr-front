@@ -9,6 +9,7 @@
     "watch": "vite build --watch --emptyOutDir"
   },
   "dependencies": {
+    "@chenfengyuan/vue-countdown": "^2.1.2",
     "@mdi/font": "^7.2.96",
     "@vueuse/core": "^10.5.0",
     "lodash": "^4.17.21",
