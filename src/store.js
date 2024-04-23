@@ -7,9 +7,10 @@ export const useWebSocketStore = defineStore({
   state: () => ({
     messages: js_vars.messages,
     status: null,
-    encodedWord: window.encodedWord,
-    groupDict: window.groupDict,
-    partialDict: window.partialDict,
+    decodedWord: js_vars.decodedWord,
+    encodedWord: js_vars.encodedWord,
+    groupDict: js_vars.groupDict,
+    partialDict: js_vars.partialDict,
     data: null,
     allowedToProceed: false,
     send: null  // Initialize 'send' as null

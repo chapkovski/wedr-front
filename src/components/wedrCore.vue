@@ -57,11 +57,13 @@
             <v-card-actions>
                 <v-btn-group>
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
-                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allInputsFilled" @click="handleSubmit"
-                        v-if="false">Submit</v-btn>
+                    <v-btn elevation=3 color='success' :flat='false' :disabled="!allCorrect"
+                        @click="handleSubmit">Submit</v-btn>
 
                 </v-btn-group>
-                <v-alert color="red" class="mx-1" v-if="errorMessage">{{ errorMessage }}</v-alert>
+                <v-alert color="red" class="mx-1" v-if="isWrongDecoded">
+                    The word is incorrect. Please try again.
+                </v-alert>
             </v-card-actions>
         </v-card>
         <v-alert color="info" class="m-3 p-3 my-3" v-if="youCompleted">
@@ -80,8 +82,7 @@ import { storeToRefs } from "pinia";
 
 
 const { encodedWord, partialDict, groupDict, decodedWord } = storeToRefs(useWebSocketStore());
-console.debug('groupDict', groupDict.value);
-const userInputData = ref({});
+
 
 
 const youCompleted = ref(false);
@@ -89,16 +90,39 @@ const startTime = ref(new Date().toISOString());
 
 const endTime = ref(null);
 const timeElapsed = ref(null);
-const cleanedSentenceArray = ref([]);
+const errorMessage = ref("The word is incorrect. Please try again.");
+const userInputData = ref({});
 const inputRefs = ref([]);
-const allInputsFilled = computed(() => cleanedSentenceArray.value.every(charObj => charObj.input ? charObj.userInput : true));
+
+const allInputsFilled = computed(() => {
+    return decodedWordForInput.value.every(item => {
+        return userInputData.value[item.inputIndex] && userInputData.value[item.inputIndex].trim() !== '';
+    });
+});
+
+
+
+const allCorrect = computed(() => {
+    // Collect user inputs in the order of their indices and join them into a single string
+    const userInputString = Object.keys(userInputData.value)
+        .sort((a, b) => a - b) // Sort keys to ensure they are in the correct order
+        .reduce((acc, key) => acc + userInputData.value[key], '').toLowerCase();;
+
+    // Compare the formed string with the decodedWord from the store
+    return userInputString === decodedWord.value.toLowerCase();;
+});
 const decodedWordForInput = computed(() => encodedWord.value.map((emoji, index) => {
     return {
         letter: emoji,
-        userInput: '',
+        userInput: userInputData.value[index] || '',
         inputIndex: index
     }
 }))
+
+const isWrongDecoded = computed(() => {
+    return allInputsFilled.value && !allCorrect.value;
+});
+
 const closingModal = () => {
     showModal.value = false;
     nextTick(
@@ -110,6 +134,7 @@ const closingModal = () => {
 }
 
 const handleInput = (inputIndex, value) => {
+
     errorMessage.value = '';
     if (value && value.length === 1) {
         nextTick(() => {
@@ -119,47 +144,80 @@ const handleInput = (inputIndex, value) => {
         });
     }
     userInputData.value[inputIndex] = value;
+
 };
+
+
 
 
 
 
 const handleKeydown = (inputIndex, event) => {
-
+    console.debug('event', event.key)
+    // Handle "Enter" key to navigate to the next input or submit the form
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
         if (allInputsFilled.value) {
-            // handleSubmit();
+            // handleSubmit();  // You can define this function to handle submission
         } else {
             // Focus on the next input field
             nextTick(() => {
-                if (inputRefs.value[inputIndex + 1]) {
-                    inputRefs.value[inputIndex + 1].focus();
+                const nextInputIndex = inputIndex + 1;
+                if (inputRefs.value[nextInputIndex]) {
+                    inputRefs.value[nextInputIndex].focus();
                 }
             });
         }
     }
-    const currentInput = cleanedSentenceArray.value.find(o => o.inputIndex === inputIndex);
-    if (currentInput && event.key === 'Backspace' && currentInput.userInput.length === 0) {
-        nextTick(() => {
-            if (inputRefs.value[inputIndex - 1]) {
-                inputRefs.value[inputIndex - 1].focus();
+    if (event.key === 'Backspace') { console.debug('backspace', inputIndex, userInputData.value) }
+    // Handle "Backspace" key to delete and move to the previous input if the current is empty
+    if (event.key === 'Backspace') {
+        const inputIsEmptyOrUndefined = userInputData.value[inputIndex] === '' || userInputData.value[inputIndex] === undefined;
+        if (inputIsEmptyOrUndefined) {
+            // Optionally, prevent default to stop any further backspace actions
+            event.preventDefault();
+            const previousInputIndex = inputIndex - 1;
+            if (previousInputIndex >= 0 && inputRefs.value[previousInputIndex]) {
+                inputRefs.value[previousInputIndex].focus();
             }
-        });
+        }
+    }
+    if (event.key === 'ArrowLeft') {
+        const previousInputIndex = inputIndex - 1;
+        if (previousInputIndex >= 0 && inputRefs.value[previousInputIndex]) {
+            event.preventDefault();
+            inputRefs.value[previousInputIndex].focus();
+        }
+    }
+
+    // Handle right arrow key for navigation to the next input
+    if (event.key === 'ArrowRight') {
+        const nextInputIndex = inputIndex + 1;
+        if (nextInputIndex < inputRefs.value.length && inputRefs.value[nextInputIndex]) {
+            event.preventDefault();
+            inputRefs.value[nextInputIndex].focus();
+        }
     }
 };
+
 
 const handleFocus = (event) => {
     event.target.select();
 };
 
 const handleReset = () => {
+    // Clear the error message
     errorMessage.value = '';
-    cleanedSentenceArray.value.forEach(charObj => {
-        if (charObj.input) {
-            charObj.userInput = '';
-        }
+
+    // Reset all user inputs
+    Object.keys(userInputData.value).forEach(key => {
+        userInputData.value[key] = '';
     });
+
+    // Trigger reactivity update in Vue
+    userInputData.value = { ...userInputData.value };
+
+    // Focus the first input element after Vue updates the DOM
     nextTick(() => {
         if (inputRefs.value[0]) {
             inputRefs.value[0].focus();
@@ -167,7 +225,7 @@ const handleReset = () => {
     });
 };
 
-const errorMessage = ref('');
+
 
 const handleSubmit = () => {
     let isValid = true;
