@@ -58,7 +58,9 @@ const chatColumnStyle = computed(() => {
       </v-alert>
       <v-alert elevation="3" bordered outlined prominent color="primary" class="mx-1">
         <vue-countdown :time="remainingTime * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
-          <span class="font-weight-bold">Remaining&nbsp;time:&nbsp;{{ minutes }}:{{ seconds }}</span>
+          <span>
+            Remaining&nbsp;time:&nbsp;{{ String(minutes).padStart(2, '0') }}:{{ String(seconds).padStart(2, '0') }}
+          </span>
         </vue-countdown>
       </v-alert>
 

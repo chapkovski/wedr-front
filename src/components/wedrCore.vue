@@ -5,9 +5,21 @@
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
         <v-dialog v-model="showModal" max-width="290" persistent>
 
-            <v-alert text="success" type="success"></v-alert>
+            <v-card title="Confirmation">
+                <v-card-text>
+                    Are you sure you want to submit your answer?
+                </v-card-text>
 
-            <v-btn text @click="closingModal">Submit</v-btn>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showModal = false;" color="secondary">Cancel</v-btn>
+                    <v-btn @click="closingModal" color="success">Submit</v-btn>
+                </v-card-actions>
+            </v-card>
+
+
+
+
 
         </v-dialog>
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
@@ -66,6 +78,9 @@
                 </v-btn-group>
                 <v-alert color="red" class="mx-1" v-if="isWrongDecoded">
                     The word is incorrect. Please try again.
+                </v-alert>
+                <v-alert color="primary" class="mx-1" v-if="allCorrect">
+                    Hurray, you have succesfully decoded this word, you are ready to submit!
                 </v-alert>
             </v-card-actions>
         </v-card>
@@ -134,7 +149,7 @@ const closingModal = () => {
     showModal.value = false;
     nextTick(
         () => {
-            // TODO: send message here to show completion by this player only.
+
             wsStore.sendMessage(
                 'answer',
                 {
@@ -175,7 +190,13 @@ const handleKeydown = (inputIndex, event) => {
     // Handle "Enter" key to navigate to the next input or submit the form
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
-        if (!!allInputsFilled.value) {
+        if (allInputsFilled.value) {
+            if (allCorrect.value) {
+                handleSubmit();
+            } else {
+                errorMessage.value = 'The word is incorrect. Please try again.';
+            }
+        } else {
 
             // Focus on the next input field
             nextTick(() => {
