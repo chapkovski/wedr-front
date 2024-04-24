@@ -175,9 +175,8 @@ const handleKeydown = (inputIndex, event) => {
     // Handle "Enter" key to navigate to the next input or submit the form
     if (event.key === 'Enter') {
         event.preventDefault();  // Prevent form submission
-        if (allInputsFilled.value) {
-            handleSubmit();  // You can define this function to handle submission
-        } else {
+        if (!!allInputsFilled.value) {
+
             // Focus on the next input field
             nextTick(() => {
                 const nextInputIndex = inputIndex + 1;

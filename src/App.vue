@@ -3,7 +3,7 @@ import { useWebSocketStore } from './store';
 import { storeToRefs } from "pinia";
 const wsStore = useWebSocketStore();
 const { remainingTime } = storeToRefs(wsStore);
-
+const num_decoded_words = ref(js_vars.num_decoded_words);
 import ChatContainer from './components/ChatContainer.vue';
 import wedrCore from './components/wedrCore.vue';
 import { computed, ref } from 'vue';
@@ -53,12 +53,15 @@ const chatColumnStyle = computed(() => {
     </v-navigation-drawer>
     <v-app-bar app>
       <v-toolbar-title>Decoding task</v-toolbar-title>
-      <v-alert elevation="3" bordered outlined height="40" class="mx-1">
+      <v-alert elevation="3" bordered outlined class="mx-1" prominent color="info">
+        Number of words decoded: <span class="font-weight-bold">{{ num_decoded_words }}</span>
+      </v-alert>
+      <v-alert elevation="3" bordered outlined prominent color="primary" class="mx-1">
         <vue-countdown :time="remainingTime * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
-          <span>Remaining&nbsp;time:&nbsp;{{ minutes }}:{{ seconds }}</span>
+          <span class="font-weight-bold">Remaining&nbsp;time:&nbsp;{{ minutes }}:{{ seconds }}</span>
         </vue-countdown>
       </v-alert>
-      Remember: if your partner leaves the chat, you can submit any code on Prolific and we'll pay you for your time!
+
       <v-spacer></v-spacer> <!-- This pushes the menu items to the right -->
 
       <v-btn outlined elevation="3" @click="drawer = !drawer">
