@@ -8,6 +8,7 @@ export const useWebSocketStore = defineStore({
   state: () => ({
     messages: js_vars.messages,
     status: null,
+    remainingTime: js_vars.remaining_time,  
     decodedWord: js_vars.decodedWord,
     encodedWord: js_vars.encodedWord,
     groupDict: js_vars.groupDict,

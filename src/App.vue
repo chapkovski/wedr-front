@@ -1,4 +1,8 @@
 <script setup>
+import { useWebSocketStore } from './store';
+import { storeToRefs } from "pinia";
+const wsStore = useWebSocketStore();
+const { remainingTime } = storeToRefs(wsStore);
 
 import ChatContainer from './components/ChatContainer.vue';
 import wedrCore from './components/wedrCore.vue';
@@ -50,7 +54,7 @@ const chatColumnStyle = computed(() => {
     <v-app-bar app>
       <v-toolbar-title>Decoding task</v-toolbar-title>
       <v-alert elevation="3" bordered outlined height="40" class="mx-1">
-        <vue-countdown :time="10 * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
+        <vue-countdown :time="remainingTime * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
           <span>Remaining&nbsp;time:&nbsp;{{ minutes }}:{{ seconds }}</span>
         </vue-countdown>
       </v-alert>
