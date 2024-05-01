@@ -237,7 +237,10 @@ const handleSubmit = () => {
     endTime.value = new Date().toISOString();
     timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
 
-    wsStore.sendMessage(
+    nextTick(
+        () => {
+
+            wsStore.sendMessage(
                 'answer',
                 {
                     completedAt: new Date().toISOString(),
@@ -247,6 +250,9 @@ const handleSubmit = () => {
 
                 }
             )
+
+        }
+    )
 
 };
 
