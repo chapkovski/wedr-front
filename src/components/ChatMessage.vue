@@ -1,20 +1,19 @@
 <template>
-       <div
-       :ref="rootElement"
-        :class="['chat-message', authorClass, { 'first-in-series': firstInSeries, 'last-in-series': lastInSeries }]">
-      <div v-if="showAvatar && !own" class="avatar" :style="{ backgroundColor: avatarColor }">
-        P2
-      </div>
-      <div class="message-box" :class="[{ 'no-avatar': !showAvatar }, messageBoxClass]" >
-        <span>{{ message }}</span>
-      </div>
-      <div v-if="showAvatar && own" class="avatar" :style="{ backgroundColor: avatarColor }">
-        Me
-      </div>
+  <div :ref="rootElement"
+    :class="['chat-message', authorClass, { 'first-in-series': firstInSeries, 'last-in-series': lastInSeries }]">
+    <div v-if="showAvatar && !own" class="avatar" :style="{ backgroundColor: avatarColor }">
+      P2
     </div>
-  </template>
-  
-  <script setup>
+    <div class="message-box" :class="[{ 'no-avatar': !showAvatar }, messageBoxClass]">
+      <span>{{ message }}</span>
+    </div>
+    <div v-if="showAvatar && own" class="avatar" :style="{ backgroundColor: avatarColor }">
+      Me
+    </div>
+  </div>
+</template>
+
+<script setup>
 import { computed, defineProps } from 'vue';
 
 const props = defineProps({
@@ -42,24 +41,26 @@ const avatarColor = computed(() => {
 });
 </script>
 
-  
-  <style>
- .chat-message {
+
+<style>
+.chat-message {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   margin-bottom: 3px;
   width: 100%;
-  margin-top: 0;  
+  margin-top: 0;
 }
 
 .chat-message.author-2 {
   justify-content: flex-end;
 }
+
 .first-in-series {
-  margin-top: 10px!important;
-  
+  margin-top: 10px !important;
+
 }
+
 .avatar {
   width: 30px;
   height: 30px;
@@ -69,40 +70,46 @@ const avatarColor = computed(() => {
   justify-content: center;
   color: white;
   margin-top: 5px;
-  margin-right: 0px; /* Default for author 1 */
+  margin-right: 0px;
+  /* Default for author 1 */
   z-index: 1;
 }
 
 .chat-message.author-2 .avatar {
   margin-right: 0;
-  margin-left: 5px; /* Push it to the right for author 2 */
+  margin-left: 5px;
+  /* Push it to the right for author 2 */
 }
+
 .message-box.no-avatar {
-    margin-left: 35px;
-    margin-right: 35px;
+  margin-left: 35px;
+  margin-right: 35px;
 }
-  .message-box {
-    background-color: inherit;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    flex: 1;
-    margin-left: 5px;
-    z-index: 0;
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    max-width: 70%; /* Limit the width of individual messages */
-  }
-  
-  .author-1 .message-box {
-    background-color: #e0e0e0;
-  }
-  
-  .author-2 .message-box {
-    background-color: #c0c0c0;
-  }
-  .rounded-top-left.message-box {
+
+.message-box {
+  background-color: inherit;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  flex: 1;
+  margin-left: 5px;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: 70%;
+  /* Limit the width of individual messages */
+}
+
+.author-1 .message-box {
+  background-color: #e0e0e0;
+}
+
+.author-2 .message-box {
+  background-color: #c0c0c0;
+}
+
+.rounded-top-left.message-box {
   border-top-left-radius: 12px;
 }
 
@@ -114,6 +121,4 @@ const avatarColor = computed(() => {
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
 }
-  
-  </style>
-  
+</style>

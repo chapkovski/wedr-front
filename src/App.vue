@@ -1,13 +1,17 @@
 <script setup>
 import { useWebSocketStore } from './store';
 import { storeToRefs } from "pinia";
-const wsStore = useWebSocketStore();
-const { remainingTime } = storeToRefs(wsStore);
-const num_decoded_words = ref(js_vars.num_decoded_words);
+
 import ChatContainer from './components/ChatContainer.vue';
 import wedrCore from './components/wedrCore.vue';
 import { computed, ref } from 'vue';
-import { useDisplay } from 'vuetify'
+import { useDisplay } from 'vuetify';
+
+const wsStore = useWebSocketStore();
+const { remainingTime } = storeToRefs(wsStore);
+
+const num_decoded_words = ref(js_vars.num_decoded_words);
+const dialogVisible = ref(js_vars.num_decoded_words >0);
 const { smAndDown } = useDisplay();
 const drawer = ref(false);
 const timerDone = () => {
@@ -37,6 +41,19 @@ const chatColumnStyle = computed(() => {
 </script>
 <template>
   <v-app app style="padding: 0px;">
+    <v-dialog v-model="dialogVisible" max-width="590" >
+      <v-card class="bg-green text-white">
+        <v-card-title>You have successfully decoded one more word!</v-card-title>
+        <v-card-text>
+          Total number of decoded words is: <b> {{ num_decoded_words }}</b>
+          <div>Close this dialog to decode a new word.</div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="text-white" text @click="dialogVisible = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
     <v-navigation-drawer v-model="drawer" app location="right" temporary :width="500">
       <v-card>
         <v-card-title>
@@ -93,6 +110,14 @@ const chatColumnStyle = computed(() => {
 
 
 <style>
+.custom-dialog {
+  background-color: rgba(0, 0, 0, 0.5); /* Darkens the background more, adjust opacity as needed */
+}
+
+.green-dialog {
+  background-color: #4CAF50; /* A shade of green, adjust the color code as needed */
+  border: 1px solid #388E3C; /* Darker green border, thin and small */
+}
 div#app {
   padding: 0px !important;
 }
