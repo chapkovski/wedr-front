@@ -3,7 +3,25 @@
         <input type="hidden" name="startTime" :value="startTime">
         <input type="hidden" name="endTime" :value="endTime">
         <input type="hidden" name="timeElapsed" :value="timeElapsed">
-        
+        <v-dialog v-model="showModal" max-width="290" persistent>
+
+            <v-card title="Confirmation">
+                <v-card-text>
+                    Are you sure you want to submit your answer?
+                </v-card-text>
+
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn @click="showModal = false;" color="secondary">Cancel</v-btn>
+                    <v-btn @click="closingModal" color="success">Submit</v-btn>
+                </v-card-actions>
+            </v-card>
+
+
+
+
+
+        </v-dialog>
         <v-card outlined elevation="3" class="m-3 p-3 my-3">
 
             <v-card-text class="m-3 p-3 dictionary-text-card non-selectable">
@@ -47,25 +65,22 @@
                             </div>
                         </div>
                     </template>
+                </div>
 
-                </div>
-                <div class="text-secondary font-weight-light text-blue-grey-darken-2">
-                    You can use uppercase or lowercase letters—it doesn't matter
-                </div>
             </v-card-text>
             <v-card-actions>
 
                 <v-btn-group>
                     <v-btn elevation=3 color="danger" @click="handleReset">Reset</v-btn>
                     <v-btn elevation=3 color='success' :flat='false' :disabled="!allCorrect"
-                        @click="">Submit</v-btn>
+                        @click="handleSubmit">Submit</v-btn>
 
                 </v-btn-group>
                 <v-alert color="red" class="mx-1" v-if="isWrongDecoded">
                     The word is incorrect. Please try again.
                 </v-alert>
                 <v-alert color="primary" class="mx-1" v-if="allCorrect">
-                    Correct, now you can click 'Submit' button or hit 'Enter'.
+                    Hurray, you have succesfully decoded this word, you are ready to submit!
                 </v-alert>
             </v-card-actions>
         </v-card>
@@ -130,7 +145,26 @@ const isWrongDecoded = computed(() => {
     return allInputsFilled.value && !allCorrect.value;
 });
 
- 
+const closingModal = () => {
+    showModal.value = false;
+    nextTick(
+        () => {
+
+            wsStore.sendMessage(
+                'answer',
+                {
+                    completedAt: new Date().toISOString(),
+                    startTime: startTime.value,
+                    endTime: endTime.value,
+                    timeElapsed: timeElapsed.value,
+
+                }
+            )
+
+        }
+    )
+
+}
 
 const handleInput = (inputIndex, value) => {
 
@@ -237,22 +271,10 @@ const handleSubmit = () => {
     endTime.value = new Date().toISOString();
     timeElapsed.value = (new Date(endTime.value) - new Date(startTime.value)) / 1000;
 
-    nextTick(
-        () => {
-
-            wsStore.sendMessage(
-                'answer',
-                {
-                    completedAt: new Date().toISOString(),
-                    startTime: startTime.value,
-                    endTime: endTime.value,
-                    timeElapsed: timeElapsed.value,
-
-                }
-            )
-
-        }
-    )
+    nextTick(() => {
+        showModal.value = true;
+    });
+    // Perform any additional logic for correct submission
 
 };
 
