@@ -8,15 +8,14 @@ import { computed, ref } from 'vue';
 import { useDisplay } from 'vuetify';
 
 const wsStore = useWebSocketStore();
-const { remainingTime } = storeToRefs(wsStore);
+
 
 const num_decoded_words = ref(js_vars.num_decoded_words);
+const total_words = ref(js_vars.total_words);
 const dialogVisible = ref(js_vars.num_decoded_words >0);
 const { smAndDown } = useDisplay();
 const drawer = ref(false);
-const timerDone = () => {
-  $('#form').submit();
-};
+
 const instructionsHtml = document.getElementById('instructions').innerHTML;
 const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 8)); //should be changed to 8
 const chatContainerCols = computed(() => (smAndDown.value ? 12 : 4));
@@ -71,15 +70,9 @@ const chatColumnStyle = computed(() => {
     <v-app-bar app>
       <v-toolbar-title>Decoding task</v-toolbar-title>
       <v-alert elevation="3" bordered outlined class="mx-1" prominent color="info">
-        Number of words decoded: <span class="font-weight-bold">{{ num_decoded_words }}</span>
+        Number of words decoded: <span class="font-weight-bold">{{ num_decoded_words }} out of {{total_words}}</span>
       </v-alert>
-      <v-alert elevation="3" bordered outlined prominent color="primary" class="mx-1">
-        <vue-countdown :time="remainingTime * 1000" v-slot="{ days, hours, minutes, seconds }" @end="timerDone">
-          <span>
-            Remaining&nbsp;time:&nbsp;{{ String(minutes).padStart(2, '0') }}:{{ String(seconds).padStart(2, '0') }}
-          </span>
-        </vue-countdown>
-      </v-alert>
+    
 
       <v-spacer></v-spacer> <!-- This pushes the menu items to the right -->
 

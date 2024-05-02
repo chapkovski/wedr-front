@@ -5,7 +5,7 @@ import { surveyPlugin } from "survey-vue3-ui";
 import App from "./App.vue";
 import "survey-core/defaultV2.min.css";
 import { useWebSocket } from '@vueuse/core'
-import VueCountdown from '@chenfengyuan/vue-countdown';
+
 import { createPinia } from 'pinia'
 
 
@@ -39,7 +39,7 @@ const vuetify = createVuetify({
 })
 
 createApp(App)
-  .component(VueCountdown.name, VueCountdown)
+  
   .use(pinia)
   .use(surveyPlugin)
   .use(vuetify)
