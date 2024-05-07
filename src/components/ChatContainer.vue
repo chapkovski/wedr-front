@@ -47,26 +47,32 @@ const scrollToLastMessage = () => {
 // Scroll to the bottom when the component mounts
 
 
+const rawMessage = ref(""); // This holds the raw input not exposed to the template
 
-
-const newMessage = ref(""); // For the input field
+// Computed property to get and set the filtered message
+const newMessage = computed({
+  get: () => rawMessage.value,
+  set: (value) => {
+    const punctuationPattern = /([.,?!()”])\1+/g;
+    const filteredValue = value.replace(punctuationPattern, ' ');
+    const allowedPunctuation = /[.,?!()”]/;
+    // Update the rawMessage with filtered or unchanged characters
+    rawMessage.value = filteredValue.split('').map(char =>
+      allowedPunctuation.test(char) || /[a-zA-Z0-9]/.test(char) ? char : ' '
+    ).join('');
+  
+  }
+});
 
 // Function to add a new message
 const addMessage = () => {
-    if (newMessage.value.trim() === "") return;
-    wsStore.sendMessage(
-        'message',
-        {
-              utcTime: new Date().toISOString(),
-             message: newMessage.value
-        }
-    )
-   
-    newMessage.value = "";
-   
-
+  if (newMessage.value.trim() === "") return;
+  wsStore.sendMessage('message', {
+    utcTime: new Date().toISOString(),
+    message: newMessage.value.trim() // Ensure message is trimmed
+  });
+  rawMessage.value = ""; // Clear the raw message after sending
 };
-
 
 // Computed
 
