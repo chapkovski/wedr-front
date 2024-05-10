@@ -11,37 +11,37 @@ const wsStore = useWebSocketStore();
 const { remainingTime } = storeToRefs(wsStore);
 
 const num_decoded_words = ref(js_vars.num_decoded_words);
-const dialogVisible = ref(js_vars.num_decoded_words >0);
+const dialogVisible = ref(js_vars.num_decoded_words > 0);
 const { smAndDown } = useDisplay();
 const drawer = ref(false);
 const timerDone = () => {
   $('#form').submit();
 };
 const instructionsHtml = document.getElementById('instructions').innerHTML;
-const wedrCoreCols = computed(() => (smAndDown.value ? 12 : 8)); //should be changed to 8
-const chatContainerCols = computed(() => (smAndDown.value ? 12 : 4));
+const wedrCoreCols = 8
+const chatContainerCols = 4
 
 const columnStyle = computed(() => {
   return {
     'overflow-y': 'auto',
-    // 'max-height': smAndDown.value ? '100vh' : '100vh'
-    'max-height': smAndDown.value ? 'calc(50vh - 50px)' : '100vh'
+
+    'max-height': '100vh'
   };
 });
 const chatColumnStyle = computed(() => {
   return {
     'overflow-y': 'auto',
     'border': '1px solid black',
-    'max-height': smAndDown.value ? 'calc(50vh - 50px)' : '100vh',
-    'position': smAndDown.value ? 'absolute' : 'relative',
-    'bottom': smAndDown.value ? '0px' : '0px',
+    'max-height': '100vh',
+    'position': 'relative',
+    'bottom': '0px',
 
   };
 });
 </script>
 <template>
   <v-app app style="padding: 0px;">
-    <v-dialog v-model="dialogVisible" max-width="590" >
+    <v-dialog v-model="dialogVisible" max-width="590">
       <v-card class="bg-green text-white">
         <v-card-title>You have successfully decoded one more word!</v-card-title>
         <v-card-text>
@@ -92,7 +92,7 @@ const chatColumnStyle = computed(() => {
     </v-app-bar>
     <v-main app full-width class="non-scrollable">
 
-      <v-row :class="{ 'flex-column': smAndDown }" style="height: calc(100vh - 50px);">
+      <v-row style="height: calc(100vh - 50px);">
 
         <v-col :cols="wedrCoreCols" :style="columnStyle">
           <wedrCore></wedrCore>
@@ -111,13 +111,17 @@ const chatColumnStyle = computed(() => {
 
 <style>
 .custom-dialog {
-  background-color: rgba(0, 0, 0, 0.5); /* Darkens the background more, adjust opacity as needed */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Darkens the background more, adjust opacity as needed */
 }
 
 .green-dialog {
-  background-color: #4CAF50; /* A shade of green, adjust the color code as needed */
-  border: 1px solid #388E3C; /* Darker green border, thin and small */
+  background-color: #4CAF50;
+  /* A shade of green, adjust the color code as needed */
+  border: 1px solid #388E3C;
+  /* Darker green border, thin and small */
 }
+
 div#app {
   padding: 0px !important;
 }
